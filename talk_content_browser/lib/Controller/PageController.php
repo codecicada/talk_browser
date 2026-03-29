@@ -13,6 +13,11 @@ use OCP\AppFramework\Services\IInitialState;
 use OCP\IRequest;
 use OCP\IUserSession;
 
+// Guard against double-inclusion during certain Nextcloud bootstrap sequences.
+if (class_exists(__NAMESPACE__ . '\\PageController', false)) {
+    return;
+}
+
 class PageController extends Controller {
     public function __construct(
         IRequest $request,

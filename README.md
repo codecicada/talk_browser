@@ -27,22 +27,31 @@ Nextcloud will be available at **http://localhost:8080** after ~60 s (first boot
 
 Credentials: `admin` / `admin`
 
-### 2. Install & enable Talk + the app (one-off)
+### 2. First-boot setup (one-off after each `docker compose down -v`)
 
 ```bash
-docker compose exec nextcloud php occ app:install spreed
-docker compose exec nextcloud php occ app:enable talk_content_browser
+./first-boot.sh
 ```
 
-### 3. Start the frontend watcher
+This script waits for Nextcloud to finish installing, then installs Talk (spreed) and enables the `talk_content_browser` app.
+
+> **Important:** `spreed` must be installed **before** `talk_content_browser` is enabled, or the Talk API will not be available. `first-boot.sh` handles the correct order automatically.
+
+### 3. Build the frontend
 
 ```bash
 cd talk_content_browser
 npm install
-npm run watch
+npm run watch   # or: npm run build for a one-shot production build
 ```
 
-Webpack rebuilds `js/` on every save in `src/`. Because Nextcloud runs in debug mode (`'debug' => true` in `docker/config.php`), JS/CSS caching is disabled — a browser refresh picks up changes immediately.
+Webpack rebuilds `js/` on every save in `src/`. Because Nextcloud runs in debug mode, JS/CSS caching is disabled — a browser refresh picks up changes immediately.
+
+After building, sync the compiled output into the running container:
+
+```bash
+./sync-app.sh
+```
 
 ### 4. Open the app
 
@@ -52,19 +61,35 @@ The app also appears as an entry in the Nextcloud top navigation bar.
 
 ---
 
+## Syncing PHP/template changes
+
+Because the app is served from a Docker **named volume** (not a direct bind mount — see Architecture Notes), changes to PHP files, templates, or `info.xml` on the host are **not** automatically reflected in the container. Run:
+
+```bash
+./sync-app.sh
+```
+
+This copies `appinfo/`, `lib/`, `templates/`, `img/`, `js/`, and `css/` into the container.
+
+---
+
 ## Project structure
 
 ```
 nexcloud-talk/
-├── docker-compose.yml                  # Nextcloud 31 + MariaDB
+├── docker-compose.yml                  # Nextcloud 31 + MariaDB + fix-perms init container
 ├── docker/
-│   └── config.php                      # debug mode, apps-extra path
+│   └── hooks/
+│       ├── post-installation/          # runs once on first boot (occ config + apps.config.php)
+│       └── before-starting/            # runs on every start (re-applies apps.config.php)
+├── first-boot.sh                       # one-off setup: install Talk + enable app
+├── sync-app.sh                         # copy host source into container named volume
 └── talk_content_browser/               # the Nextcloud app
     ├── appinfo/
-    │   ├── info.xml                    # app manifest (App Store metadata)
+    │   ├── info.xml                    # app manifest (includes <namespace>TalkContentBrowser</namespace>)
     │   └── routes.php                  # page route → PageController
     ├── lib/
-    │   ├── AppInfo/Application.php     # bootstrapper (IBootstrap)
+    │   ├── AppInfo/Application.php     # app bootstrapper
     │   └── Controller/PageController.php  # serves the SPA shell
     ├── templates/main.php              # PHP shell: loads compiled JS/CSS
     ├── img/app.svg                     # navigation icon
@@ -97,13 +122,34 @@ nexcloud-talk/
 | Task | Command |
 |------|---------|
 | Start containers | `docker compose up -d` |
+| First-boot setup | `./first-boot.sh` |
+| Sync PHP changes | `./sync-app.sh` |
 | Stop containers | `docker compose down` |
 | Destroy volumes (full reset) | `docker compose down -v` |
-| Enable the app | `docker compose exec nextcloud php occ app:enable talk_content_browser` |
-| Disable the app | `docker compose exec nextcloud php occ app:disable talk_content_browser` |
-| View Nextcloud logs | `docker compose exec nextcloud php occ log:tail` |
+| Run occ | `docker exec -u 33 nextcloud_app php /var/www/html/occ <cmd>` |
+| View Nextcloud logs | `docker exec -u 33 nextcloud_app php /var/www/html/occ log:tail` |
 | Production JS build | `cd talk_content_browser && npm run build` |
 | Lint frontend | `cd talk_content_browser && npm run lint` |
+
+---
+
+## Architecture notes
+
+### Named volume for `/apps-dev`
+
+The Nextcloud Docker image populates `/var/www/html` via `rsync` on first boot. Mounting a bind mount inside that path causes rsync to fail. The app is therefore mounted outside at `/apps-dev`.
+
+However, Nextcloud requires the writable apps path to be owned by `www-data` (uid 33). A bind mount from the host is always owned by `root:root` inside the container. To fix this, a one-shot `fix-perms` init container runs `chown 33:33 /apps-dev` before Nextcloud starts, writing to a **named volume** that is then shared with the `nextcloud` service.
+
+The trade-off: host file changes are not automatically visible inside the container. Use `./sync-app.sh` to push changes.
+
+### `apps.config.php` override
+
+Nextcloud ships a bundled `apps.config.php` that hardcodes `apps_paths` to `[apps, custom_apps]`. This file loads **after** `config.php` and wins for array keys. The `before-starting` Docker hook overwrites this file on every container start to include `/apps-dev` as a writable apps path.
+
+### Namespace declaration in `info.xml`
+
+Nextcloud derives the PHP namespace from the app ID. Without a `<namespace>` tag, `talk_content_browser` → `ucfirst('talk_content_browser')` = `Talk_content_browser`, which does not match the `OCA\TalkContentBrowser` namespace in the PHP files. The explicit `<namespace>TalkContentBrowser</namespace>` in `info.xml` fixes this.
 
 ---
 

@@ -3,6 +3,7 @@
       xsi:noNamespaceSchemaLocation="https://apps.nextcloud.com/schema/apps/info.xsd">
     <id>talk_content_browser</id>
     <name>Talk Content Browser</name>
+    <namespace>TalkContentBrowser</namespace>
     <summary>Browse Talk conversation content by type: files, links, images, audio and more</summary>
     <description><![CDATA[
 Talk Content Browser adds a dedicated page to Nextcloud where you can explore the content shared in any Talk conversation — grouped by type.
