@@ -18,17 +18,16 @@
 				:title="item.messageParameters?.file?.name ?? ''"
 				@click="openItem(item)"
 			>
-				<!-- Thumbnail or video poster -->
+		<!-- Thumbnail — works for both images and videos via Nextcloud preview API -->
+			<div class="media-gallery__thumb-wrap">
 				<img
-					v-if="isImage(item)"
 					:src="previewUrl(item)"
 					:alt="item.messageParameters?.file?.name ?? ''"
 					class="media-gallery__thumb"
 					loading="lazy"
 				/>
-				<div v-else class="media-gallery__video-thumb">
-					<span class="icon-video" aria-hidden="true" />
-				</div>
+				<span v-if="!isImage(item)" class="media-gallery__play-icon icon-play" aria-hidden="true" />
+			</div>
 
 				<div class="media-gallery__meta">
 					<span class="media-gallery__name">{{ fileName(item) }}</span>
@@ -51,7 +50,7 @@
 
 <script>
 import { NcButton, NcEmptyContent, NcLoadingIcon } from '@nextcloud/vue'
-import { generateUrl } from '@nextcloud/router'
+import { getRootUrl } from '@nextcloud/router'
 import { translate as t } from '@nextcloud/l10n'
 
 export default {
@@ -105,8 +104,8 @@ export default {
 		previewUrl(item) {
 			const fileId = item.messageParameters?.file?.id
 			if (!fileId) return ''
-			// Nextcloud preview endpoint
-			return generateUrl(`/core/preview?fileId=${fileId}&x=200&y=200&a=true`)
+			// Use getRootUrl() to avoid the /index.php/ prefix added by generateUrl()
+			return `${getRootUrl()}/index.php/core/preview?fileId=${fileId}&x=200&y=200&a=true`
 		},
 
 		formatDate(timestamp) {
@@ -127,6 +126,24 @@ export default {
 </script>
 
 <style scoped>
+.media-gallery__thumb-wrap {
+	position: relative;
+	width: 100%;
+	height: 130px;
+}
+
+.media-gallery__play-icon {
+	position: absolute;
+	top: 50%;
+	left: 50%;
+	transform: translate(-50%, -50%);
+	width: 36px;
+	height: 36px;
+	background: rgba(0, 0, 0, 0.55);
+	border-radius: 50%;
+	pointer-events: none;
+}
+
 .media-gallery__grid {
 	display: grid;
 	grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
@@ -149,7 +166,7 @@ export default {
 
 .media-gallery__thumb {
 	width: 100%;
-	height: 130px;
+	height: 100%;
 	object-fit: cover;
 	display: block;
 }

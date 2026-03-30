@@ -90,9 +90,10 @@ export async function fetchSharedItems(token, objectType, lastKnownMessageId = n
 		? parseInt(response.headers['x-chat-last-given'], 10)
 		: null
 
-	// The Talk share API returns an object keyed by message ID, not an array.
+	// The Talk share API returns an object keyed by message ID (ascending).
+	// Reverse so newest items come first.
 	const raw = response.data.ocs.data
-	const items = Array.isArray(raw) ? raw : Object.values(raw)
+	const items = Array.isArray(raw) ? raw.slice().reverse() : Object.values(raw).reverse()
 
 	return {
 		items,

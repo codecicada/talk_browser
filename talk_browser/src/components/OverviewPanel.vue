@@ -67,7 +67,7 @@
 
 <script>
 import { NcEmptyContent, NcLoadingIcon } from '@nextcloud/vue'
-import { generateUrl } from '@nextcloud/router'
+import { getRootUrl } from '@nextcloud/router'
 import { translate as t } from '@nextcloud/l10n'
 import { TABS } from '../constants.js'
 
@@ -115,7 +115,7 @@ export default {
 		previewUrl(item) {
 			const fileId = item.messageParameters?.file?.id
 			if (!fileId) return ''
-			return generateUrl(`/core/preview?fileId=${fileId}&x=120&y=120&a=true`)
+			return `${getRootUrl()}/index.php/core/preview?fileId=${fileId}&x=120&y=120&a=true`
 		},
 
 		formatDate(timestamp) {

@@ -2,7 +2,7 @@
 # first-boot.sh — Run after `docker compose up -d` on a fresh volume to:
 #   1. Wait for Nextcloud to finish its first-boot install
 #   2. Install and enable Nextcloud Talk (spreed)
-#   3. Enable the talk_content_browser app
+#   3. Enable the talk_browser app
 #
 # Only needed once per `docker compose down -v` cycle.
 # Usage: ./first-boot.sh
@@ -29,12 +29,12 @@ fi
 
 echo ""
 echo "Installing Nextcloud Talk (spreed)..."
-$OCC app:install spreed
+$OCC app:install spreed 2>/dev/null || $OCC app:enable spreed 2>/dev/null || true
 
 echo ""
-echo "Enabling talk_content_browser..."
-$OCC app:enable talk_content_browser
+echo "Enabling talk_browser..."
+$OCC app:enable talk_browser
 
 echo ""
 echo "All done! Open http://localhost:8080 and log in as admin/admin."
-echo "Navigate to the Talk Content Browser icon in the top nav."
+echo "Navigate to the Talk Browser icon in the top nav."
