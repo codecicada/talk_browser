@@ -7,16 +7,17 @@
  */
 
 import axios from '@nextcloud/axios'
-import { generateUrl } from '@nextcloud/router'
+import { getRootUrl } from '@nextcloud/router'
 
 const OCS_BASE = '/ocs/v2.php/apps/spreed/api'
 
 /**
- * Build an OCS URL. The generateUrl helper prepends the Nextcloud base path.
+ * Build an OCS URL using the Nextcloud root (not generateUrl which adds /index.php/).
+ * getRootUrl() returns the Nextcloud base path (e.g. '' or '/nextcloud').
  * @param {string} path - path after /ocs/v2.php/apps/spreed/api
  */
 function ocsUrl(path) {
-	return generateUrl(`${OCS_BASE}${path}`)
+	return `${getRootUrl()}${OCS_BASE}${path}`
 }
 
 /**

@@ -62,7 +62,7 @@
 
 <script>
 import { NcButton, NcEmptyContent, NcLoadingIcon } from '@nextcloud/vue'
-import { generateUrl } from '@nextcloud/router'
+import { getRootUrl } from '@nextcloud/router'
 import { translate as t } from '@nextcloud/l10n'
 
 export default {
@@ -123,7 +123,7 @@ export default {
 			// Use the Nextcloud WebDAV path to stream directly
 			const path = item.messageParameters?.file?.path
 			if (!path) return ''
-			return generateUrl(`/remote.php/webdav/${encodeURIComponent(path)}`)
+			return `${getRootUrl()}/remote.php/webdav/${encodeURIComponent(path)}`
 		},
 
 		formatDate(timestamp) {
