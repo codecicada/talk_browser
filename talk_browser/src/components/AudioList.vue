@@ -52,7 +52,11 @@
 			<NcLoadingIcon :size="32" />
 		</div>
 
-		<div v-if="hasMore && !loading" class="audio-list__more">
+		<div v-if="loadingMore" class="audio-list__loading-more">
+			<NcLoadingIcon :size="24" />
+		</div>
+
+		<div v-if="hasMore && !loading && !loadingMore" class="audio-list__more">
 			<NcButton @click="$emit('load-more')">
 				{{ t('talk_browser', 'Load more') }}
 			</NcButton>
@@ -73,6 +77,7 @@ export default {
 	props: {
 		items: { type: Array, default: () => [] },
 		loading: { type: Boolean, default: false },
+		loadingMore: { type: Boolean, default: false },
 		hasMore: { type: Boolean, default: false },
 		search: { type: String, default: '' },
 		// true = voice notes (voice type), false = audio files (audio type)
@@ -120,10 +125,12 @@ export default {
 		},
 
 		audioSrc(item) {
-			// Use the Nextcloud WebDAV path to stream directly
+			// Use the Nextcloud WebDAV path to stream directly.
+			// Encode each path segment individually so that '/' separators are preserved.
 			const path = item.messageParameters?.file?.path
 			if (!path) return ''
-			return `${getRootUrl()}/remote.php/webdav/${encodeURIComponent(path)}`
+			const encoded = path.split('/').map(encodeURIComponent).join('/')
+			return `${getRootUrl()}/remote.php/webdav/${encoded}`
 		},
 
 		formatDate(timestamp) {
@@ -195,6 +202,7 @@ export default {
 }
 
 .audio-list__loading,
+.audio-list__loading-more,
 .audio-list__more {
 	display: flex;
 	justify-content: center;

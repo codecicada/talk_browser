@@ -64,6 +64,22 @@
 						@go-to-tab="activeTab = $event"
 					/>
 
+						<!-- Item loading error (non-overview tabs) -->
+						<NcEmptyContent
+							v-else-if="itemsError && !itemsLoading"
+							:name="t('talk_browser', 'Could not load content')"
+							:description="itemsError"
+						>
+							<template #icon>
+								<span class="icon-error" />
+							</template>
+							<template #action>
+								<NcButton @click="loadItems">
+									{{ t('talk_browser', 'Retry') }}
+								</NcButton>
+							</template>
+						</NcEmptyContent>
+
 						<!-- Images & Video -->
 						<MediaGallery
 							v-else-if="tab === 'media'"
@@ -220,17 +236,15 @@ export default {
 
 		// When the conversation changes, reload overview and reset tab
 		watch(selectedToken, async (token) => {
-			console.log('[TalkContentBrowser] selectedToken changed:', token)
 			if (!token) return
 			activeTab.value = 'overview'
 			overviewData.value = {}
 			overviewLoading.value = true
 			try {
 				const result = await fetchShareOverview(token)
-				console.log('[TalkContentBrowser] fetchShareOverview result:', result)
 				overviewData.value = result
 			} catch (err) {
-				console.error('[TalkContentBrowser] fetchShareOverview error:', err)
+				console.error('[TalkBrowser] fetchShareOverview error:', err)
 				overviewData.value = {}
 			} finally {
 				overviewLoading.value = false
@@ -266,6 +280,7 @@ export default {
 			itemsError,
 			itemsHasMore,
 			linkScanDone,
+			loadItems,
 			loadMoreItems,
 		}
 	},

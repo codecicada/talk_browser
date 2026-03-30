@@ -39,7 +39,11 @@
 			<NcLoadingIcon :size="32" />
 		</div>
 
-		<div v-if="hasMore && !loading" class="generic-list__more">
+		<div v-if="loadingMore" class="generic-list__loading-more">
+			<NcLoadingIcon :size="24" />
+		</div>
+
+		<div v-if="hasMore && !loading && !loadingMore" class="generic-list__more">
 			<NcButton @click="$emit('load-more')">
 				{{ t('talk_browser', 'Load more') }}
 			</NcButton>
@@ -59,6 +63,7 @@ export default {
 	props: {
 		items: { type: Array, default: () => [] },
 		loading: { type: Boolean, default: false },
+		loadingMore: { type: Boolean, default: false },
 		hasMore: { type: Boolean, default: false },
 		search: { type: String, default: '' },
 		objectType: { type: String, default: 'other' },
@@ -205,6 +210,7 @@ export default {
 }
 
 .generic-list__loading,
+.generic-list__loading-more,
 .generic-list__more {
 	display: flex;
 	justify-content: center;

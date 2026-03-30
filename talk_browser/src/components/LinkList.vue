@@ -53,7 +53,14 @@
 			</span>
 		</div>
 
-		<div v-if="hasMore && !loading" class="link-list__more">
+		<div v-if="loadingMore" class="link-list__loading-more">
+			<NcLoadingIcon :size="24" />
+			<span class="link-list__scan-note">
+				{{ t('talk_browser', 'Scanning more history…') }}
+			</span>
+		</div>
+
+		<div v-if="hasMore && !loading && !loadingMore" class="link-list__more">
 			<NcButton @click="$emit('load-more')">
 				{{ t('talk_browser', 'Scan more history') }}
 			</NcButton>
@@ -73,6 +80,7 @@ export default {
 	props: {
 		items: { type: Array, default: () => [] },
 		loading: { type: Boolean, default: false },
+		loadingMore: { type: Boolean, default: false },
 		hasMore: { type: Boolean, default: false },
 		linkScanDone: { type: Boolean, default: false },
 		search: { type: String, default: '' },
@@ -205,7 +213,9 @@ export default {
 	margin-top: 4px;
 }
 
-.link-list__loading {
+.link-list__loading,
+.link-list__loading-more,
+.link-list__more {
 	display: flex;
 	flex-direction: column;
 	align-items: center;
@@ -213,14 +223,13 @@ export default {
 	padding: 20px 0;
 }
 
+.link-list__more {
+	flex-direction: row;
+	justify-content: center;
+}
+
 .link-list__scan-note {
 	font-size: 13px;
 	color: var(--color-text-maxcontrast);
-}
-
-.link-list__more {
-	display: flex;
-	justify-content: center;
-	padding: 20px 0;
 }
 </style>
