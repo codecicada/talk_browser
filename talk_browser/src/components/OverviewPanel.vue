@@ -4,8 +4,8 @@
 
 		<NcEmptyContent
 			v-else-if="isEmpty"
-			:name="t('talk_content_browser', 'Nothing shared yet')"
-			:description="t('talk_content_browser', 'Start sharing files, links, and media in this conversation')"
+			:name="t('talk_browser', 'No shared content yet')"
+			:description="t('talk_browser', 'Share files, images, audio, or locations in this conversation to see them here. Plain links appear in the Links tab.')"
 		>
 			<template #icon>
 				<span class="icon-home" />
@@ -21,13 +21,13 @@
 				<div class="overview__section-header">
 					<h2 class="overview__section-title">
 						<span :class="['overview__section-icon', section.icon]" aria-hidden="true" />
-						{{ t('talk_content_browser', section.label) }}
+						{{ t('talk_browser', section.label) }}
 					</h2>
 					<button
 						class="overview__see-all"
 						@click="$emit('go-to-tab', section.id)"
 					>
-						{{ t('talk_content_browser', 'See all') }}
+						{{ t('talk_browser', 'See all') }}
 					</button>
 				</div>
 
@@ -86,8 +86,6 @@ export default {
 			default: false,
 		},
 	},
-
-	emits: ['go-to-tab'],
 
 	computed: {
 		sections() {

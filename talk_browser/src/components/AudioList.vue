@@ -41,7 +41,7 @@
 					target="_blank"
 					rel="noopener noreferrer"
 					class="audio-list__download"
-					:title="t('talk_content_browser', 'Open in Files')"
+					:title="t('talk_browser', 'Open in Files')"
 				>
 					<span class="icon-external" aria-hidden="true" />
 				</a>
@@ -54,7 +54,7 @@
 
 		<div v-if="hasMore && !loading" class="audio-list__more">
 			<NcButton @click="$emit('load-more')">
-				{{ t('talk_content_browser', 'Load more') }}
+				{{ t('talk_browser', 'Load more') }}
 			</NcButton>
 		</div>
 	</div>
@@ -79,8 +79,6 @@ export default {
 		isVoice: { type: Boolean, default: false },
 	},
 
-	emits: ['load-more'],
-
 	computed: {
 		filtered() {
 			if (!this.search) return this.items
@@ -93,20 +91,20 @@ export default {
 
 		emptyTitle() {
 			if (this.search) {
-				return t('talk_content_browser', 'No results for "{search}"', { search: this.search })
+				return t('talk_browser', 'No results for "{search}"', { search: this.search })
 			}
 			return this.isVoice
-				? t('talk_content_browser', 'No voice notes yet')
-				: t('talk_content_browser', 'No audio files yet')
+				? t('talk_browser', 'No voice notes yet')
+				: t('talk_browser', 'No audio files yet')
 		},
 
 		emptyDescription() {
 			if (this.search) {
-				return t('talk_content_browser', 'Try a different search term')
+				return t('talk_browser', 'Try a different search term')
 			}
 			return this.isVoice
-				? t('talk_content_browser', 'Record a voice note in Talk to see it here')
-				: t('talk_content_browser', 'Share an audio file in this conversation to see it here')
+				? t('talk_browser', 'Record a voice note in Talk to see it here')
+				: t('talk_browser', 'Share an audio file in this conversation to see it here')
 		},
 	},
 

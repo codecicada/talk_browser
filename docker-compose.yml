@@ -19,11 +19,11 @@ services:
     container_name: nextcloud_fix_perms
     restart: "no"
     volumes:
-      - ./talk_content_browser:/src/talk_content_browser:ro
+      - ./talk_browser:/src/talk_browser:ro
       - apps_dev:/apps-dev
     command: >
       sh -c "
-        cp -r /src/talk_content_browser /apps-dev/talk_content_browser &&
+        cp -r /src/talk_browser /apps-dev/talk_browser &&
         chown -R 33:33 /apps-dev
       "
 
@@ -45,6 +45,8 @@ services:
       - nextcloud_data:/var/www/html
       # Entrypoint hooks handle first-boot config and apps_paths setup
       - ./docker/hooks:/docker-entrypoint-hooks.d
+      # Apache alias so /apps-dev static assets are served (bind-mounted as root-owned file, always present)
+      - ./docker/apache/apps-dev.conf:/etc/apache2/conf-enabled/apps-dev.conf:ro
       # App served from named volume (writable by www-data, set by fix-perms)
       - apps_dev:/apps-dev
     depends_on:

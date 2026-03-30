@@ -1,5 +1,5 @@
 {
-  "name": "talk_content_browser",
+  "name": "talk_browser",
   "version": "1.0.0",
   "description": "Browse Nextcloud Talk conversation content by type",
   "private": true,
@@ -15,13 +15,13 @@
     "@nextcloud/initial-state": "^2.2.0",
     "@nextcloud/router": "^3.0.1",
     "@nextcloud/vue": "^8.20.0",
-    "vue": "^3.4.0"
+    "vue": "^2.7.16"
   },
   "devDependencies": {
     "@nextcloud/eslint-config": "^8.4.1",
     "@nextcloud/webpack-vue-config": "^6.1.0",
-    "css-loader": "^6.10.0",
-    "vue-loader": "^17.4.2"
+    "vue-loader": "^15.11.1",
+    "vue-template-compiler": "^2.7.16"
   },
   "engines": {
     "node": ">=20.0.0",

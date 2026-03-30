@@ -42,7 +42,7 @@
 
 		<div v-if="hasMore && !loading" class="file-list__more">
 			<NcButton @click="$emit('load-more')">
-				{{ t('talk_content_browser', 'Load more') }}
+				{{ t('talk_browser', 'Load more') }}
 			</NcButton>
 		</div>
 	</div>
@@ -64,8 +64,6 @@ export default {
 		search: { type: String, default: '' },
 	},
 
-	emits: ['load-more'],
-
 	computed: {
 		filtered() {
 			if (!this.search) return this.items
@@ -77,14 +75,14 @@ export default {
 
 		emptyTitle() {
 			return this.search
-				? t('talk_content_browser', 'No results for "{search}"', { search: this.search })
-				: t('talk_content_browser', 'No files yet')
+				? t('talk_browser', 'No results for "{search}"', { search: this.search })
+				: t('talk_browser', 'No files yet')
 		},
 
 		emptyDescription() {
 			return this.search
-				? t('talk_content_browser', 'Try a different search term')
-				: t('talk_content_browser', 'Share a file in this conversation to see it here')
+				? t('talk_browser', 'Try a different search term')
+				: t('talk_browser', 'Share a file in this conversation to see it here')
 		},
 	},
 

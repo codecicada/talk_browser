@@ -89,8 +89,12 @@ export async function fetchSharedItems(token, objectType, lastKnownMessageId = n
 		? parseInt(response.headers['x-chat-last-given'], 10)
 		: null
 
+	// The Talk share API returns an object keyed by message ID, not an array.
+	const raw = response.data.ocs.data
+	const items = Array.isArray(raw) ? raw : Object.values(raw)
+
 	return {
-		items: response.data.ocs.data,
+		items,
 		lastKnownMessageId: nextCursor,
 	}
 }

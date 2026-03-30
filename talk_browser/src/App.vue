@@ -1,26 +1,13 @@
 <template>
-	<NcContent app-name="talk_content_browser">
+	<NcContent app-name="talk_browser">
 		<!-- Left navigation: conversation picker -->
 		<NcAppNavigation>
 			<template #list>
-				<NcAppNavigationItem
-					:name="t('talk_content_browser', 'Talk Content Browser')"
-					:allow-collapse="false"
+				<ConversationPicker
+					v-model="selectedToken"
+					:conversations="conversations"
+					:loading="conversationsLoading"
 				/>
-			</template>
-
-			<template #footer>
-				<div class="app-nav__conversation-picker">
-					<p class="app-nav__label">
-						{{ t('talk_content_browser', 'Conversation') }}
-					</p>
-					<ConversationPicker
-						v-model="selectedToken"
-						:conversations="conversations"
-						:loading="conversationsLoading"
-						@update:model-value="onConversationChange"
-					/>
-				</div>
 			</template>
 		</NcAppNavigation>
 
@@ -29,13 +16,13 @@
 			<!-- Loading conversations -->
 			<div v-if="conversationsLoading" class="app__loading">
 				<NcLoadingIcon :size="48" />
-				<p>{{ t('talk_content_browser', 'Loading conversations…') }}</p>
+				<p>{{ t('talk_browser', 'Loading conversations…') }}</p>
 			</div>
 
 			<!-- Error loading conversations -->
 			<NcEmptyContent
 				v-else-if="conversationsError"
-				:name="t('talk_content_browser', 'Could not load conversations')"
+				:name="t('talk_browser', 'Could not load conversations')"
 				:description="conversationsError"
 			>
 				<template #icon>
@@ -43,7 +30,7 @@
 				</template>
 				<template #action>
 					<NcButton @click="loadConversations">
-						{{ t('talk_content_browser', 'Retry') }}
+						{{ t('talk_browser', 'Retry') }}
 					</NcButton>
 				</template>
 			</NcEmptyContent>
@@ -51,8 +38,8 @@
 			<!-- No conversation selected -->
 			<NcEmptyContent
 				v-else-if="!selectedToken"
-				:name="t('talk_content_browser', 'Select a conversation')"
-				:description="t('talk_content_browser', 'Choose a Talk conversation from the sidebar to browse its content')"
+				:name="t('talk_browser', 'Select a conversation')"
+				:description="t('talk_browser', 'Choose a Talk conversation from the sidebar to browse its content')"
 			>
 				<template #icon>
 					<span class="icon-talk" />
@@ -70,12 +57,12 @@
 				<ContentTabs v-model="activeTab">
 					<template #default="{ activeTab: tab, searchQuery }">
 						<!-- Overview -->
-						<OverviewPanel
-							v-if="tab === 'overview'"
-							:overview-data="overviewData"
-							:loading="itemsLoading"
-							@go-to-tab="activeTab = $event"
-						/>
+					<OverviewPanel
+						v-if="tab === 'overview'"
+						:overview-data="overviewData"
+						:loading="overviewLoading"
+						@go-to-tab="activeTab = $event"
+					/>
 
 						<!-- Images & Video -->
 						<MediaGallery
@@ -157,7 +144,6 @@
 import {
 	NcAppContent,
 	NcAppNavigation,
-	NcAppNavigationItem,
 	NcButton,
 	NcContent,
 	NcEmptyContent,
@@ -185,7 +171,6 @@ export default {
 	components: {
 		NcAppContent,
 		NcAppNavigation,
-		NcAppNavigationItem,
 		NcButton,
 		NcContent,
 		NcEmptyContent,
@@ -235,24 +220,29 @@ export default {
 
 		// When the conversation changes, reload overview and reset tab
 		watch(selectedToken, async (token) => {
+			console.log('[TalkContentBrowser] selectedToken changed:', token)
 			if (!token) return
 			activeTab.value = 'overview'
 			overviewData.value = {}
 			overviewLoading.value = true
 			try {
-				overviewData.value = await fetchShareOverview(token)
-			} catch {
+				const result = await fetchShareOverview(token)
+				console.log('[TalkContentBrowser] fetchShareOverview result:', result)
+				overviewData.value = result
+			} catch (err) {
+				console.error('[TalkContentBrowser] fetchShareOverview error:', err)
 				overviewData.value = {}
 			} finally {
 				overviewLoading.value = false
 			}
 		})
 
-		// When the active tab changes, update the objectType ref so useSharedItems reacts
+		// When the active tab changes, update the objectType ref so useSharedItems reacts.
+		// Do NOT call loadItems() here — the watch inside useSharedItems fires automatically
+		// when objectTypeRef changes, and calling it twice causes duplicate results (e.g. links).
 		watch(activeTab, (tab) => {
 			if (tab === 'overview') return
 			objectTypeRef.value = tab
-			loadItems()
 		})
 
 		return {
@@ -286,10 +276,6 @@ export default {
 
 	methods: {
 		t,
-
-		onConversationChange(token) {
-			this.activeTab = 'overview'
-		},
 	},
 }
 </script>
@@ -306,25 +292,14 @@ export default {
 }
 
 .app__header {
-	padding: 16px 16px 0;
+	/* Leave room for the sidebar toggle button (~44 px) on narrow viewports */
+	line-height: 51px;
+	padding-inline-start: calc(44px + 16px);
 }
 
 .app__title {
 	font-size: 20px;
 	font-weight: 600;
 	margin: 0 0 4px;
-}
-
-.app-nav__conversation-picker {
-	padding: 12px;
-}
-
-.app-nav__label {
-	font-size: 12px;
-	font-weight: 600;
-	color: var(--color-text-maxcontrast);
-	text-transform: uppercase;
-	letter-spacing: 0.05em;
-	margin: 0 0 6px;
 }
 </style>

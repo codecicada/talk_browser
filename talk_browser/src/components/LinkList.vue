@@ -49,13 +49,13 @@
 		<div v-if="loading" class="link-list__loading">
 			<NcLoadingIcon :size="32" />
 			<span v-if="!linkScanDone" class="link-list__scan-note">
-				{{ t('talk_content_browser', 'Scanning message history for links…') }}
+				{{ t('talk_browser', 'Scanning message history for links…') }}
 			</span>
 		</div>
 
 		<div v-if="hasMore && !loading" class="link-list__more">
 			<NcButton @click="$emit('load-more')">
-				{{ t('talk_content_browser', 'Scan more history') }}
+				{{ t('talk_browser', 'Scan more history') }}
 			</NcButton>
 		</div>
 	</div>
@@ -78,8 +78,6 @@ export default {
 		search: { type: String, default: '' },
 	},
 
-	emits: ['load-more'],
-
 	computed: {
 		filtered() {
 			if (!this.search) return this.items
@@ -92,14 +90,14 @@ export default {
 
 		emptyTitle() {
 			return this.search
-				? t('talk_content_browser', 'No results for "{search}"', { search: this.search })
-				: t('talk_content_browser', 'No links found yet')
+				? t('talk_browser', 'No results for "{search}"', { search: this.search })
+				: t('talk_browser', 'No links found yet')
 		},
 
 		emptyDescription() {
 			return this.search
-				? t('talk_content_browser', 'Try a different search term')
-				: t('talk_content_browser', 'Type a URL into this conversation to see it here')
+				? t('talk_browser', 'Try a different search term')
+				: t('talk_browser', 'Type a URL into this conversation to see it here')
 		},
 	},
 

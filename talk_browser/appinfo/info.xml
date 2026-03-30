@@ -1,8 +1,8 @@
 <?xml version="1.0"?>
 <info xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
       xsi:noNamespaceSchemaLocation="https://apps.nextcloud.com/schema/apps/info.xsd">
-    <id>talk_content_browser</id>
-    <name>Talk Content Browser</name>
+    <id>talk_browser</id>
+    <name>Talk Browser</name>
     <namespace>TalkContentBrowser</namespace>
     <summary>Browse Talk conversation content by type: files, links, images, audio and more</summary>
     <description><![CDATA[
@@ -18,9 +18,9 @@ Talk Content Browser adds a dedicated page to Nextcloud where you can explore th
     ]]></description>
     <version>1.0.0</version>
     <licence>AGPL-3.0-or-later</licence>
-    <author mail="your@email.com" homepage="https://github.com/yourname">Your Name</author>
-    <bugs>https://github.com/yourname/talk_content_browser/issues</bugs>
-    <repository>https://github.com/yourname/talk_content_browser</repository>
+    <author mail="contact@codecicada.com" homepage="https://github.com/codecicada">Code Cicada</author>
+    <bugs>https://github.com/codecicada/talk_browser/issues</bugs>
+    <repository>https://github.com/codecicada/talk_browser</repository>
     <category>social</category>
 
     <dependencies>
@@ -33,8 +33,8 @@ Talk Content Browser adds a dedicated page to Nextcloud where you can explore th
 
     <navigations>
         <navigation>
-            <name>Talk Content Browser</name>
-            <route>talk_content_browser.page.index</route>
+            <name>Talk Browser</name>
+            <route>talk_browser.page.index</route>
             <order>10</order>
             <icon>app.svg</icon>
             <type>link</type>

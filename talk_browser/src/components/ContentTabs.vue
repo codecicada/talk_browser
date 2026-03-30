@@ -9,7 +9,7 @@
 				@click="selectTab(tab.id)"
 			>
 				<span :class="['content-tabs__icon', tab.icon]" aria-hidden="true" />
-				<span class="content-tabs__label">{{ t('talk_content_browser', tab.label) }}</span>
+				<span class="content-tabs__label">{{ t('talk_browser', tab.label) }}</span>
 			</button>
 		</nav>
 
@@ -17,7 +17,7 @@
 		<div v-if="activeTab !== 'overview'" class="content-tabs__search">
 			<NcTextField
 				:value="searchQuery"
-				:label="t('talk_content_browser', 'Search…')"
+				:label="t('talk_browser', 'Search…')"
 				:show-trailing-button="searchQuery.length > 0"
 				trailing-button-icon="close"
 				@update:value="onSearch"
@@ -47,13 +47,11 @@ export default {
 	components: { NcTextField },
 
 	props: {
-		modelValue: {
+		value: {
 			type: String,
 			default: 'overview',
 		},
 	},
-
-	emits: ['update:modelValue', 'search'],
 
 	data() {
 		return {
@@ -64,7 +62,7 @@ export default {
 
 	computed: {
 		activeTab() {
-			return this.modelValue
+			return this.value
 		},
 	},
 
@@ -73,7 +71,7 @@ export default {
 
 		selectTab(tabId) {
 			this.searchQuery = ''
-			this.$emit('update:modelValue', tabId)
+			this.$emit('input', tabId)
 		},
 
 		onSearch(val) {

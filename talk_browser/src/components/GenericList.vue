@@ -41,7 +41,7 @@
 
 		<div v-if="hasMore && !loading" class="generic-list__more">
 			<NcButton @click="$emit('load-more')">
-				{{ t('talk_content_browser', 'Load more') }}
+				{{ t('talk_browser', 'Load more') }}
 			</NcButton>
 		</div>
 	</div>
@@ -64,8 +64,6 @@ export default {
 		objectType: { type: String, default: 'other' },
 	},
 
-	emits: ['load-more'],
-
 	computed: {
 		filtered() {
 			if (!this.search) return this.items
@@ -83,18 +81,18 @@ export default {
 
 		emptyTitle() {
 			if (this.search) {
-				return t('talk_content_browser', 'No results for "{search}"', { search: this.search })
+				return t('talk_browser', 'No results for "{search}"', { search: this.search })
 			}
-			if (this.objectType === 'location') return t('talk_content_browser', 'No locations yet')
-			if (this.objectType === 'deckcard') return t('talk_content_browser', 'No Deck cards yet')
-			if (this.objectType === 'recording') return t('talk_content_browser', 'No recordings yet')
-			return t('talk_content_browser', 'Nothing here yet')
+			if (this.objectType === 'location') return t('talk_browser', 'No locations yet')
+			if (this.objectType === 'deckcard') return t('talk_browser', 'No Deck cards yet')
+			if (this.objectType === 'recording') return t('talk_browser', 'No recordings yet')
+			return t('talk_browser', 'Nothing here yet')
 		},
 
 		emptyDescription() {
 			return this.search
-				? t('talk_content_browser', 'Try a different search term')
-				: t('talk_content_browser', 'Share content in this conversation to see it here')
+				? t('talk_browser', 'Try a different search term')
+				: t('talk_browser', 'Share content in this conversation to see it here')
 		},
 	},
 

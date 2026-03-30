@@ -3,6 +3,10 @@
 # /apps-dev. We do NOT call occ here — occ requires a writable apps directory
 # at bootstrap time, which is circular when reconfiguring apps_paths.
 # /apps-dev permissions are fixed by the fix-perms init container in compose.
+#
+# The Apache alias for /apps-dev is handled via a bind-mounted conf file in
+# docker-compose.yml (docker/apache/apps-dev.conf -> conf-enabled), so it
+# requires no write access and works on every restart without root privileges.
 set -e
 
 # Overwrite apps.config.php which loads AFTER config.php and would otherwise

@@ -4,7 +4,7 @@
  */
 
 import { ref, watch } from 'vue'
-import { fetchSharedItems, fetchShareOverview, fetchMessages, extractUrls } from '../api/talk.js'
+import { fetchSharedItems, fetchMessages, extractUrls } from '../api/talk.js'
 
 export function useSharedItems(tokenRef, objectTypeRef) {
 	const items = ref([])
@@ -21,7 +21,8 @@ export function useSharedItems(tokenRef, objectTypeRef) {
 	async function load() {
 		const token = tokenRef.value
 		const objectType = objectTypeRef.value
-		if (!token || !objectType) return
+		// 'overview' is handled separately in App.vue via fetchShareOverview; skip here.
+		if (!token || !objectType || objectType === 'overview') return
 
 		loading.value = true
 		error.value = null
@@ -32,13 +33,7 @@ export function useSharedItems(tokenRef, objectTypeRef) {
 		linkMessages.value = []
 
 		try {
-			if (objectType === 'overview') {
-				const data = await fetchShareOverview(token)
-				// Flatten overview into a list with type annotation
-				items.value = Object.entries(data).flatMap(([type, msgs]) =>
-					msgs.map(m => ({ ...m, _overviewType: type })),
-				)
-			} else if (objectType === 'links') {
+			if (objectType === 'links') {
 				await loadLinks(token)
 			} else {
 				const result = await fetchSharedItems(token, objectType, null)

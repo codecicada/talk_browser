@@ -13,7 +13,7 @@ if (class_exists(__NAMESPACE__ . '\\Application', false)) {
 }
 
 class Application extends App {
-    public const APP_ID = 'talk_content_browser';
+    public const APP_ID = 'talk_browser';
 
     public function __construct() {
         parent::__construct(self::APP_ID);
