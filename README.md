@@ -1,4 +1,4 @@
-# Talk Content Browser
+# Talk Browser
 
 A Nextcloud app that lets you browse the content shared in any Talk conversation — grouped by type.
 
@@ -33,37 +33,37 @@ Credentials: `admin` / `admin`
 ./first-boot.sh
 ```
 
-This script waits for Nextcloud to finish installing, then installs Talk (spreed) and enables the `talk_content_browser` app.
+This script waits for Nextcloud to finish installing, then installs Talk (spreed) and enables the `talk_browser` app.
 
-> **Important:** `spreed` must be installed **before** `talk_content_browser` is enabled, or the Talk API will not be available. `first-boot.sh` handles the correct order automatically.
+> **Important:** `spreed` must be installed **before** `talk_browser` is enabled, or the Talk API will not be available. `first-boot.sh` handles the correct order automatically.
 
 ### 3. Build the frontend
 
 ```bash
-cd talk_content_browser
+cd talk_browser
 npm install
 npm run watch   # or: npm run build for a one-shot production build
 ```
 
-Webpack rebuilds `js/` on every save in `src/`. Because Nextcloud runs in debug mode, JS/CSS caching is disabled — a browser refresh picks up changes immediately.
-
-After building, sync the compiled output into the running container:
+Webpack rebuilds `js/` on every save in `src/`. After building, sync the compiled output into the running container:
 
 ```bash
 ./sync-app.sh
 ```
 
+Then hard-refresh the browser (Ctrl+Shift+R).
+
 ### 4. Open the app
 
-Navigate to **http://localhost:8080/apps/talk_content_browser**
+Navigate to **http://localhost:8080/apps/talk_browser**
 
 The app also appears as an entry in the Nextcloud top navigation bar.
 
 ---
 
-## Syncing PHP/template changes
+## Syncing changes
 
-Because the app is served from a Docker **named volume** (not a direct bind mount — see Architecture Notes), changes to PHP files, templates, or `info.xml` on the host are **not** automatically reflected in the container. Run:
+Because the app is served from a Docker **named volume** (not a direct bind mount), changes to PHP files, templates, or `info.xml` on the host are **not** automatically reflected in the container. Run:
 
 ```bash
 ./sync-app.sh
@@ -79,22 +79,24 @@ This copies `appinfo/`, `lib/`, `templates/`, `img/`, `js/`, and `css/` into the
 nexcloud-talk/
 ├── docker-compose.yml                  # Nextcloud 31 + MariaDB + fix-perms init container
 ├── docker/
+│   ├── apache/
+│   │   └── apps-dev.conf               # Apache alias for /apps-dev static asset serving
 │   └── hooks/
 │       ├── post-installation/          # runs once on first boot (occ config + apps.config.php)
 │       └── before-starting/            # runs on every start (re-applies apps.config.php)
 ├── first-boot.sh                       # one-off setup: install Talk + enable app
 ├── sync-app.sh                         # copy host source into container named volume
-└── talk_content_browser/               # the Nextcloud app
+└── talk_browser/                       # the Nextcloud app
     ├── appinfo/
-    │   ├── info.xml                    # app manifest (includes <namespace>TalkContentBrowser</namespace>)
+    │   ├── info.xml                    # app manifest
     │   └── routes.php                  # page route → PageController
     ├── lib/
     │   ├── AppInfo/Application.php     # app bootstrapper
     │   └── Controller/PageController.php  # serves the SPA shell
-    ├── templates/main.php              # PHP shell: loads compiled JS/CSS
+    ├── templates/main.php              # PHP shell: loads compiled JS
     ├── img/app.svg                     # navigation icon
     ├── src/
-    │   ├── main.js                     # Vue 3 entry point
+    │   ├── main.js                     # Vue 2.7 entry point
     │   ├── App.vue                     # root component & state orchestration
     │   ├── constants.js                # tab definitions, conversation type enums
     │   ├── api/talk.js                 # Talk OCS REST API helpers
@@ -102,13 +104,13 @@ nexcloud-talk/
     │   │   ├── useConversations.js     # load conversations, default to Note to Self
     │   │   └── useSharedItems.js       # paginated shared items + link extraction
     │   └── components/
-    │       ├── ConversationPicker.vue  # dropdown to switch conversations
+    │       ├── ConversationPicker.vue  # sidebar conversation list
     │       ├── ContentTabs.vue         # tab bar + per-tab search input
     │       ├── OverviewPanel.vue       # grouped summary of all content types
     │       ├── MediaGallery.vue        # image/video thumbnail grid
     │       ├── FileList.vue            # file list with mime icons & sizes
     │       ├── AudioList.vue           # HTML5 audio player per item (audio + voice)
-    │       ├── LinkList.vue            # extracted URLs with favicons
+    │       ├── LinkList.vue            # extracted URLs from message history
     │       └── GenericList.vue         # locations, Deck cards, other rich objects
     ├── package.json
     ├── webpack.config.js               # @nextcloud/webpack-vue-config base
@@ -123,13 +125,14 @@ nexcloud-talk/
 |------|---------|
 | Start containers | `docker compose up -d` |
 | First-boot setup | `./first-boot.sh` |
-| Sync PHP changes | `./sync-app.sh` |
+| Sync changes | `./sync-app.sh` |
 | Stop containers | `docker compose down` |
 | Destroy volumes (full reset) | `docker compose down -v` |
 | Run occ | `docker exec -u 33 nextcloud_app php /var/www/html/occ <cmd>` |
 | View Nextcloud logs | `docker exec -u 33 nextcloud_app php /var/www/html/occ log:tail` |
-| Production JS build | `cd talk_content_browser && npm run build` |
-| Lint frontend | `cd talk_content_browser && npm run lint` |
+| Watch frontend | `cd talk_browser && npm run watch` |
+| Production JS build | `cd talk_browser && npm run build` |
+| Lint frontend | `cd talk_browser && npm run lint` |
 
 ---
 
@@ -139,17 +142,17 @@ nexcloud-talk/
 
 The Nextcloud Docker image populates `/var/www/html` via `rsync` on first boot. Mounting a bind mount inside that path causes rsync to fail. The app is therefore mounted outside at `/apps-dev`.
 
-However, Nextcloud requires the writable apps path to be owned by `www-data` (uid 33). A bind mount from the host is always owned by `root:root` inside the container. To fix this, a one-shot `fix-perms` init container runs `chown 33:33 /apps-dev` before Nextcloud starts, writing to a **named volume** that is then shared with the `nextcloud` service.
+Nextcloud requires the writable apps path to be owned by `www-data` (uid 33). A bind mount from the host is always owned by `root:root` inside the container. To fix this, a one-shot `fix-perms` init container runs `chown 33:33 /apps-dev` before Nextcloud starts, writing to a **named volume** shared with the `nextcloud` service.
 
 The trade-off: host file changes are not automatically visible inside the container. Use `./sync-app.sh` to push changes.
 
+### Apache alias for static assets
+
+The app lives at `/apps-dev/` which is outside Apache's DocumentRoot (`/var/www/html`). A static config file (`docker/apache/apps-dev.conf`) is bind-mounted directly into `/etc/apache2/conf-enabled/` so Apache can serve JS/CSS from that path on every restart without requiring root access from a hook script.
+
 ### `apps.config.php` override
 
-Nextcloud ships a bundled `apps.config.php` that hardcodes `apps_paths` to `[apps, custom_apps]`. This file loads **after** `config.php` and wins for array keys. The `before-starting` Docker hook overwrites this file on every container start to include `/apps-dev` as a writable apps path.
-
-### Namespace declaration in `info.xml`
-
-Nextcloud derives the PHP namespace from the app ID. Without a `<namespace>` tag, `talk_content_browser` → `ucfirst('talk_content_browser')` = `Talk_content_browser`, which does not match the `OCA\TalkContentBrowser` namespace in the PHP files. The explicit `<namespace>TalkContentBrowser</namespace>` in `info.xml` fixes this.
+Nextcloud ships a bundled `apps.config.php` that hardcodes `apps_paths` to `[apps, custom_apps]`. This file loads **after** `config.php` and wins for array keys. The `before-starting` Docker hook overwrites it on every container start to include `/apps-dev` as a writable apps path.
 
 ---
 
@@ -168,15 +171,15 @@ All Talk interaction is done **client-side** via the Talk OCS REST API. Because 
 | Other | `GET /ocs/…/chat/{token}/share?objectType=other` |
 | **Links** | Full message history scan + client-side URL regex |
 
-Pagination uses the `X-Chat-Last-Given` response header as a cursor. A `304 Not Modified` signals the end of history (used for link scanning).
+Pagination uses the `X-Chat-Last-Given` response header as a cursor.
 
 ---
 
 ## App Store publishing (when ready)
 
-1. Update `appinfo/info.xml` — bump `<version>`, set your real author/email/repo URLs.
-2. Build production assets: `npm ci && npm run build`
-3. Strip dev files: `node_modules/`, `src/`, `package*.json`, `webpack.config.js`, `tests/`
+1. Update `appinfo/info.xml` — bump `<version>`, set real author/email/repo URLs.
+2. Build production assets: `cd talk_browser && npm ci && npm run build`
+3. Strip dev files: `node_modules/`, `src/`, `package*.json`, `webpack.config.js`
 4. Sign the app with your Nextcloud code-signing certificate.
-5. Pack as `talk_content_browser.tar.gz` (root entry must be the folder name).
+5. Pack as `talk_browser.tar.gz` (root entry must be the folder name).
 6. Create a GitHub Release, attach the tarball, publish at https://apps.nextcloud.com.
