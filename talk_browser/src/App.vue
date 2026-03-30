@@ -295,6 +295,12 @@ export default {
 }
 </script>
 
+<style>
+.content.app-talk_browser {
+	margin-top: 0;
+}
+</style>
+
 <style scoped>
 .app__loading {
 	display: flex;
