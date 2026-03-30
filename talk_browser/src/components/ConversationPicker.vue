@@ -14,12 +14,31 @@
 				]"
 				@click="$emit('input', conv.token)"
 			>
-				<!-- Avatar / icon -->
-				<span class="conversation-list__avatar" aria-hidden="true">
-					<span v-if="conv.type === 6" class="icon-user-admin conversation-list__avatar-icon" />
-					<span v-else-if="conv.type === 2 || conv.type === 3" class="icon-contacts conversation-list__avatar-icon" />
-					<span v-else class="icon-user conversation-list__avatar-icon" />
-				</span>
+			<!-- Avatar: user avatar for 1:1; current user for note-to-self; room avatar for group/public -->
+			<NcAvatar
+				v-if="conv.type === 1"
+				:user="conv.name"
+				:display-name="conv.displayName"
+				:size="32"
+				:show-user-status="false"
+				class="conversation-list__avatar"
+			/>
+			<NcAvatar
+				v-else-if="conv.type === 6"
+				:user="currentUser.uid"
+				:display-name="currentUser.displayName"
+				:size="32"
+				:show-user-status="false"
+				class="conversation-list__avatar"
+			/>
+				<NcAvatar
+					v-else
+					:url="roomAvatarUrl(conv)"
+					:display-name="conv.displayName"
+					:size="32"
+					:is-no-user="true"
+					class="conversation-list__avatar"
+				/>
 
 				<!-- Name + type badge -->
 				<span class="conversation-list__name">{{ conv.displayName }}</span>
@@ -32,13 +51,15 @@
 </template>
 
 <script>
-import { NcLoadingIcon } from '@nextcloud/vue'
+import { NcAvatar, NcLoadingIcon } from '@nextcloud/vue'
+import { getRootUrl } from '@nextcloud/router'
 import { translate as t } from '@nextcloud/l10n'
+import { getCurrentUser } from '@nextcloud/auth'
 
 export default {
 	name: 'ConversationPicker',
 
-	components: { NcLoadingIcon },
+	components: { NcAvatar, NcLoadingIcon },
 
 	props: {
 		conversations: {
@@ -55,7 +76,25 @@ export default {
 		},
 	},
 
-	methods: { t },
+	data() {
+		return {
+			currentUser: getCurrentUser() || { uid: '', displayName: '' },
+		}
+	},
+
+	methods: {
+		t,
+
+		/**
+		 * Avatar URL for group / public conversations.
+		 * Uses the Talk room avatar endpoint (app route, not OCS).
+		 * Appends avatarVersion as a cache-buster when available.
+		 */
+		roomAvatarUrl(conv) {
+			const base = `${getRootUrl()}/ocs/v2.php/apps/spreed/api/v1/room/${conv.token}/avatar`
+			return conv.avatarVersion ? `${base}?v=${conv.avatarVersion}` : base
+		},
+	},
 }
 </script>
 
@@ -102,19 +141,6 @@ export default {
 
 .conversation-list__avatar {
 	flex-shrink: 0;
-	width: 32px;
-	height: 32px;
-	border-radius: 50%;
-	background: var(--color-background-dark);
-	display: flex;
-	align-items: center;
-	justify-content: center;
-}
-
-.conversation-list__avatar-icon {
-	width: 16px;
-	height: 16px;
-	opacity: 0.7;
 }
 
 .conversation-list__name {
