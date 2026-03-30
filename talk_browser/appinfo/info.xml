@@ -28,7 +28,7 @@ Talk Content Browser adds a dedicated page to Nextcloud where you can explore th
         <database>mysql</database>
         <database>pgsql</database>
         <database>sqlite</database>
-        <nextcloud min-version="29" max-version="31"/>
+        <nextcloud min-version="29" max-version="34"/>
     </dependencies>
 
     <navigations>
