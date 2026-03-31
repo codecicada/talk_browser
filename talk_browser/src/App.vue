@@ -297,7 +297,7 @@ export default {
 
 <style>
 .content.app-talk_browser {
-	margin-top: 0;
+	margin-top: 0 !important;
 }
 </style>
 
