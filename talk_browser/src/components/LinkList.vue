@@ -31,15 +31,20 @@
 						@error="onFaviconError"
 					/>
 
-					<div class="link-list__info">
-						<span class="link-list__title">{{ displayTitle(item) }}</span>
-						<span class="link-list__url">{{ item.url }}</span>
-						<span class="link-list__meta">
-							{{ item.actorDisplayName }}
-							&middot;
-							{{ formatDate(item.timestamp) }}
+				<div class="link-list__info">
+					<span class="link-list__title">
+						{{ displayTitle(item) }}
+						<span v-if="item.count > 1" class="link-list__count" :title="t('talk_browser', '{count} times shared', { count: item.count })">
+							&times;{{ item.count }}
 						</span>
-					</div>
+					</span>
+					<span class="link-list__url">{{ item.url }}</span>
+					<span class="link-list__meta">
+						{{ item.actorDisplayName }}
+						&middot;
+						{{ formatDate(item.timestamp) }}
+					</span>
+				</div>
 
 					<span class="icon-external link-list__open-icon" aria-hidden="true" />
 				</a>
@@ -187,6 +192,18 @@ export default {
 	overflow: hidden;
 	text-overflow: ellipsis;
 	color: var(--color-primary-element);
+}
+
+.link-list__count {
+	display: inline-block;
+	font-size: 11px;
+	font-weight: 600;
+	padding: 0 5px;
+	margin-left: 5px;
+	border-radius: 10px;
+	background: var(--color-background-dark);
+	color: var(--color-text-maxcontrast);
+	vertical-align: middle;
 }
 
 .link-list__url {

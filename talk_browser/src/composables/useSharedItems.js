@@ -16,7 +16,8 @@ export function useSharedItems(tokenRef, objectTypeRef) {
 
 	// For link extraction: track if we've scanned the full history
 	const linkScanDone = ref(false)
-	const linkMessages = ref([]) // raw messages containing URLs
+	// Map<url, item> — source of truth for deduplication across pages
+	const linkMap = ref(new Map())
 
 	async function load() {
 		const token = tokenRef.value
@@ -30,7 +31,7 @@ export function useSharedItems(tokenRef, objectTypeRef) {
 		cursor.value = null
 		hasMore.value = false
 		linkScanDone.value = false
-		linkMessages.value = []
+		linkMap.value = new Map()
 
 		try {
 			if (objectType === 'links') {
@@ -75,8 +76,7 @@ export function useSharedItems(tokenRef, objectTypeRef) {
 	// ── Link extraction ────────────────────────────────────────────────────────
 
 	async function loadLinks(token) {
-		// Fetch the first page of message history and start accumulating links
-		linkMessages.value = []
+		linkMap.value = new Map()
 		cursor.value = null
 		await loadLinksPage(token)
 	}
@@ -84,23 +84,30 @@ export function useSharedItems(tokenRef, objectTypeRef) {
 	async function loadLinksPage(token) {
 		const result = await fetchMessages(token, cursor.value)
 
-		// Extract links from comment messages only
-		const newLinks = result.messages
-			.filter(m => m.messageType === 'comment' && !m.systemMessage)
-			.flatMap(m => {
-				const urls = extractUrls(m.message)
-				return urls.map(url => ({
-					id: `${m.id}-${url}`,
-					messageId: m.id,
-					timestamp: m.timestamp,
-					actorDisplayName: m.actorDisplayName,
-					url,
-					// Try to derive a display title from the message text
-					title: m.message.trim() !== url ? m.message.trim() : url,
-				}))
-			})
+		// Deduplicate by URL using a Map; first occurrence = newest (scan is newest→oldest)
+		for (const m of result.messages) {
+			if (m.messageType !== 'comment' || m.systemMessage) continue
+			for (const url of extractUrls(m.message)) {
+				if (linkMap.value.has(url)) {
+					// Already seen — just bump the count
+					const existing = linkMap.value.get(url)
+					linkMap.value.set(url, { ...existing, count: existing.count + 1 })
+				} else {
+					linkMap.value.set(url, {
+						id: `link-${url}`,
+						messageId: m.id,
+						timestamp: m.timestamp,
+						actorDisplayName: m.actorDisplayName,
+						url,
+						title: m.message.trim() !== url ? m.message.trim() : url,
+						count: 1,
+					})
+				}
+			}
+		}
 
-		items.value = [...items.value, ...newLinks]
+		// Re-derive items array from the map (insertion order = newest first)
+		items.value = Array.from(linkMap.value.values())
 		cursor.value = result.lastKnownMessageId
 		hasMore.value = !result.done
 		if (result.done) {
