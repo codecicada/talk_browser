@@ -16,33 +16,42 @@
 				:key="item.id"
 				:data-id="item.id"
 				class="file-list__item"
-				@click="openItem(item)"
 			>
-				<span class="file-list__icon-wrap">
-					<span :class="['file-list__icon', mimeIcon(item)]" aria-hidden="true" />
-				</span>
-
-				<div class="file-list__info">
-					<span class="file-list__name">{{ fileName(item) }}</span>
-					<span class="file-list__meta">
-						{{ formatSize(item.messageParameters?.file?.size) }}
-						&middot;
-						{{ formatDate(item.timestamp) }}
-						&middot;
-						<span class="file-list__sender">{{ item.actorDisplayName }}</span>
+				<a
+					:href="fileHref(item)"
+					target="_blank"
+					rel="noopener noreferrer"
+					class="file-list__item-link"
+					:aria-label="t('talk_browser', 'Open {name} in Files (opens in new tab)', { name: fileName(item) })"
+				>
+					<span class="file-list__icon-wrap">
+						<span :class="['file-list__icon', mimeIcon(item)]" aria-hidden="true" />
 					</span>
-				</div>
 
-				<span class="icon-external file-list__open-icon" aria-hidden="true" />
+					<div class="file-list__info">
+						<span class="file-list__name">{{ fileName(item) }}</span>
+						<span class="file-list__meta">
+							{{ formatSize(item.messageParameters?.file?.size) }}
+							&middot;
+							{{ formatDate(item.timestamp) }}
+							&middot;
+							<span class="file-list__sender">{{ item.actorDisplayName }}</span>
+						</span>
+					</div>
+
+					<span class="icon-external file-list__open-icon" aria-hidden="true" />
+				</a>
 			</li>
 		</ul>
 
-		<div v-if="loading" class="file-list__loading">
-			<NcLoadingIcon :size="32" />
+		<div v-if="loading" class="file-list__loading" role="status" aria-live="polite">
+			<NcLoadingIcon :size="32" aria-hidden="true" />
+			<span class="sr-only">{{ t('talk_browser', 'Loading files…') }}</span>
 		</div>
 
-		<div v-if="loadingMore" class="file-list__loading-more">
-			<NcLoadingIcon :size="24" />
+		<div v-if="loadingMore" class="file-list__loading-more" role="status" aria-live="polite">
+			<NcLoadingIcon :size="24" aria-hidden="true" />
+			<span class="sr-only">{{ t('talk_browser', 'Loading more files…') }}</span>
 		</div>
 
 		<div v-if="hasMore && !loading && !loadingMore" class="file-list__more">
@@ -158,11 +167,28 @@ export default {
 				window.open(link, '_blank', 'noopener,noreferrer')
 			}
 		},
+
+		fileHref(item) {
+			return safeUrl(item.messageParameters?.file?.link
+				?? item.messageParameters?.object?.link) || '#'
+		},
 	},
 }
 </script>
 
 <style scoped>
+.sr-only {
+	position: absolute;
+	width: 1px;
+	height: 1px;
+	padding: 0;
+	margin: -1px;
+	overflow: hidden;
+	clip: rect(0, 0, 0, 0);
+	white-space: nowrap;
+	border: 0;
+}
+
 .file-list__items {
 	list-style: none;
 	margin: 0;
@@ -170,6 +196,11 @@ export default {
 }
 
 .file-list__item {
+	border-radius: 8px;
+	overflow: hidden;
+}
+
+.file-list__item-link {
 	display: flex;
 	align-items: center;
 	gap: 12px;
@@ -177,9 +208,11 @@ export default {
 	border-radius: 8px;
 	cursor: pointer;
 	transition: background 0.1s;
+	text-decoration: none;
+	color: inherit;
 }
 
-.file-list__item:hover {
+.file-list__item-link:hover {
 	background: var(--color-background-hover);
 }
 

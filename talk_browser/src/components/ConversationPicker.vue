@@ -1,7 +1,8 @@
 <template>
 	<div class="conversation-list">
-		<div v-if="loading" class="conversation-list__loading">
-			<NcLoadingIcon :size="20" />
+		<div v-if="loading" class="conversation-list__loading" role="status" aria-live="polite">
+			<NcLoadingIcon :size="20" aria-hidden="true" />
+			<span class="sr-only">{{ t('talk_browser', 'Loading conversations…') }}</span>
 		</div>
 
 		<template v-else>
@@ -20,19 +21,29 @@
 				:name="t('talk_browser', 'No conversations found')"
 			>
 				<template #icon>
-					<span class="icon-search" />
+					<span class="icon-search" aria-hidden="true" />
 				</template>
 			</NcEmptyContent>
 
-			<ul v-else class="conversation-list__items">
+			<ul
+				v-else
+				class="conversation-list__items"
+				role="listbox"
+				:aria-label="t('talk_browser', 'Conversations')"
+			>
 				<li
 					v-for="conv in filtered"
 					:key="conv.token"
+					role="option"
+					:aria-selected="conv.token === value"
+					tabindex="0"
 					:class="[
 						'conversation-list__item',
 						{ 'conversation-list__item--active': conv.token === value },
 					]"
 					@click="$emit('input', conv.token)"
+					@keydown.enter.prevent="$emit('input', conv.token)"
+					@keydown.space.prevent="$emit('input', conv.token)"
 				>
 					<!-- Avatar: user avatar for 1:1; current user for note-to-self; room avatar for group/public -->
 					<NcAvatar
@@ -135,6 +146,18 @@ export default {
 <style scoped>
 .conversation-list {
 	width: 100%;
+}
+
+.sr-only {
+	position: absolute;
+	width: 1px;
+	height: 1px;
+	padding: 0;
+	margin: -1px;
+	overflow: hidden;
+	clip: rect(0, 0, 0, 0);
+	white-space: nowrap;
+	border: 0;
 }
 
 .conversation-list__loading {

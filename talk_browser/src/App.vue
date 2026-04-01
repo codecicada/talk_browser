@@ -14,8 +14,8 @@
 		<!-- Main content area -->
 		<NcAppContent>
 			<!-- Loading conversations -->
-			<div v-if="conversationsLoading" class="app__loading">
-				<NcLoadingIcon :size="48" />
+			<div v-if="conversationsLoading" class="app__loading" role="status" aria-live="polite">
+				<NcLoadingIcon :size="48" aria-hidden="true" />
 				<p>{{ t('talk_browser', 'Loading conversations…') }}</p>
 			</div>
 
@@ -26,7 +26,7 @@
 				:description="t('talk_browser', 'There was a problem connecting to Nextcloud Talk. Please check your connection and try again.')"
 			>
 				<template #icon>
-					<span class="icon-error" />
+					<span class="icon-error" aria-hidden="true" />
 				</template>
 				<template #action>
 					<NcButton @click="loadConversations">
@@ -42,7 +42,7 @@
 				:description="t('talk_browser', 'Choose a Talk conversation from the sidebar to browse its content')"
 			>
 				<template #icon>
-					<span class="icon-talk" />
+					<span class="icon-talk" aria-hidden="true" />
 				</template>
 			</NcEmptyContent>
 
@@ -72,9 +72,9 @@
 						:name="t('talk_browser', 'Could not load content')"
 						:description="t('talk_browser', 'There was a problem loading shared items. Please try again.')"
 					>
-							<template #icon>
-								<span class="icon-error" />
-							</template>
+					<template #icon>
+							<span class="icon-error" aria-hidden="true" />
+						</template>
 							<template #action>
 								<NcButton @click="loadItems">
 									{{ t('talk_browser', 'Retry') }}

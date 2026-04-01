@@ -1,6 +1,9 @@
 <template>
 	<div class="overview">
-		<NcLoadingIcon v-if="loading" :size="40" class="overview__loading" />
+		<div v-if="loading" class="overview__loading" role="status" aria-live="polite">
+			<NcLoadingIcon :size="40" aria-hidden="true" />
+			<span class="sr-only">{{ t('talk_browser', 'Loading overview…') }}</span>
+		</div>
 
 		<NcEmptyContent
 			v-else-if="error"
@@ -8,7 +11,7 @@
 			:description="t('talk_browser', 'There was a problem loading the overview. Please try selecting the conversation again.')"
 		>
 			<template #icon>
-				<span class="icon-error" />
+				<span class="icon-error" aria-hidden="true" />
 			</template>
 		</NcEmptyContent>
 
@@ -18,7 +21,7 @@
 			:description="t('talk_browser', 'Share files, images, audio, or locations in this conversation to see them here. Plain links appear in the Links tab.')"
 		>
 			<template #icon>
-				<span class="icon-home" />
+				<span class="icon-home" aria-hidden="true" />
 			</template>
 		</NcEmptyContent>
 
@@ -35,6 +38,7 @@
 					</h2>
 					<button
 						class="overview__see-all"
+						:aria-label="t('talk_browser', 'See all {section}', { section: t('talk_browser', section.label) })"
 						@click="$emit('go-to-tab', section.id)"
 					>
 						{{ t('talk_browser', 'See all') }}
@@ -43,18 +47,20 @@
 
 					<!-- Media: grid thumbnails -->
 				<div v-if="section.id === 'media'" class="overview__media-row">
-					<div
+					<button
 						v-for="item in section.items"
 						:key="item.id"
 						class="overview__media-thumb"
+						:aria-label="t('talk_browser', 'Open {name} in media tab', { name: item.messageParameters && item.messageParameters.file ? item.messageParameters.file.name : 'item' })"
 						@click="$emit('go-to-item', { tab: section.id, id: item.id })"
 					>
 						<img
 							:src="previewUrl(item)"
-							:alt="item.messageParameters?.file?.name ?? ''"
+							:alt="''"
 							loading="lazy"
+							aria-hidden="true"
 						/>
-					</div>
+					</button>
 				</div>
 
 				<!-- Files / Audio / Other: compact list -->
@@ -63,11 +69,16 @@
 						v-for="item in section.items"
 						:key="item.id"
 						class="overview__list-item"
-						@click="$emit('go-to-item', { tab: section.id, id: item.id })"
 					>
-						<span :class="['overview__item-icon', section.icon]" aria-hidden="true" />
-						<span class="overview__item-name">{{ itemName(item) }}</span>
-						<span class="overview__item-date">{{ formatDate(item.timestamp) }}</span>
+						<button
+							class="overview__list-item-btn"
+							:aria-label="t('talk_browser', 'Open {name}', { name: itemName(item) })"
+							@click="$emit('go-to-item', { tab: section.id, id: item.id })"
+						>
+							<span :class="['overview__item-icon', section.icon]" aria-hidden="true" />
+							<span class="overview__item-name">{{ itemName(item) }}</span>
+							<span class="overview__item-date">{{ formatDate(item.timestamp) }}</span>
+						</button>
 					</li>
 				</ul>
 			</section>
@@ -143,8 +154,21 @@ export default {
 </script>
 
 <style scoped>
+.sr-only {
+	position: absolute;
+	width: 1px;
+	height: 1px;
+	padding: 0;
+	margin: -1px;
+	overflow: hidden;
+	clip: rect(0, 0, 0, 0);
+	white-space: nowrap;
+	border: 0;
+}
+
 .overview__loading {
-	display: block;
+	display: flex;
+	justify-content: center;
 	margin: 48px auto;
 }
 
@@ -205,6 +229,8 @@ export default {
 	cursor: pointer;
 	flex-shrink: 0;
 	background: var(--color-background-dark);
+	border: none;
+	padding: 0;
 }
 
 .overview__media-thumb img {
@@ -229,16 +255,24 @@ export default {
 }
 
 .overview__list-item {
+	display: contents;
+}
+
+.overview__list-item-btn {
 	display: flex;
 	align-items: center;
 	gap: 8px;
+	width: 100%;
 	padding: 6px 8px;
 	border-radius: 6px;
 	cursor: pointer;
 	transition: background 0.1s;
+	background: none;
+	border: none;
+	text-align: left;
 }
 
-.overview__list-item:hover {
+.overview__list-item-btn:hover {
 	background: var(--color-background-hover);
 }
 

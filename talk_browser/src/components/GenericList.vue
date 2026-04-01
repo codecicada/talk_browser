@@ -16,43 +16,50 @@
 				:key="item.id"
 				:data-id="item.id"
 				class="generic-list__item"
-				@click="openItem(item)"
 			>
-				<span :class="['generic-list__icon', itemIcon(item)]" aria-hidden="true" />
+				<button
+					class="generic-list__item-btn"
+					:aria-label="t('talk_browser', 'Open {name}', { name: itemName(item) })"
+					@click="openItem(item)"
+				>
+					<span :class="['generic-list__icon', itemIcon(item)]" aria-hidden="true" />
 
-				<div class="generic-list__info">
-					<span class="generic-list__name">{{ itemName(item) }}</span>
-					<span class="generic-list__meta">
-						{{ item.actorDisplayName }}
-						&middot;
-						{{ formatDate(item.timestamp) }}
-					</span>
-					<span v-if="itemDescription(item)" class="generic-list__desc">
-						{{ itemDescription(item) }}
-					</span>
-					<a
-						v-if="mapUrl(item)"
-						:href="mapUrl(item)"
-						target="_blank"
-						rel="noopener noreferrer"
-						class="generic-list__map-link"
-						@click.stop
-					>
-						{{ t('talk_browser', 'Open on map') }}
-						<span class="icon-external" aria-hidden="true" />
-					</a>
-				</div>
+					<div class="generic-list__info">
+						<span class="generic-list__name">{{ itemName(item) }}</span>
+						<span class="generic-list__meta">
+							{{ item.actorDisplayName }}
+							&middot;
+							{{ formatDate(item.timestamp) }}
+						</span>
+						<span v-if="itemDescription(item)" class="generic-list__desc">
+							{{ itemDescription(item) }}
+						</span>
+						<a
+							v-if="mapUrl(item)"
+							:href="mapUrl(item)"
+							target="_blank"
+							rel="noopener noreferrer"
+							class="generic-list__map-link"
+							@click.stop
+						>
+							{{ t('talk_browser', 'Open on map') }}
+							<span class="icon-external" aria-hidden="true" />
+						</a>
+					</div>
 
-				<span class="icon-external generic-list__open-icon" aria-hidden="true" />
+					<span class="icon-external generic-list__open-icon" aria-hidden="true" />
+				</button>
 			</li>
 		</ul>
 
-		<div v-if="loading" class="generic-list__loading">
-			<NcLoadingIcon :size="32" />
+		<div v-if="loading" class="generic-list__loading" role="status" aria-live="polite">
+			<NcLoadingIcon :size="32" aria-hidden="true" />
+			<span class="sr-only">{{ t('talk_browser', 'Loading…') }}</span>
 		</div>
 
-		<div v-if="loadingMore" class="generic-list__loading-more">
-			<NcLoadingIcon :size="24" />
+		<div v-if="loadingMore" class="generic-list__loading-more" role="status" aria-live="polite">
+			<NcLoadingIcon :size="24" aria-hidden="true" />
+			<span class="sr-only">{{ t('talk_browser', 'Loading more…') }}</span>
 		</div>
 
 		<div v-if="hasMore && !loading && !loadingMore" class="generic-list__more">
@@ -193,6 +200,18 @@ export default {
 </script>
 
 <style scoped>
+.sr-only {
+	position: absolute;
+	width: 1px;
+	height: 1px;
+	padding: 0;
+	margin: -1px;
+	overflow: hidden;
+	clip: rect(0, 0, 0, 0);
+	white-space: nowrap;
+	border: 0;
+}
+
 .generic-list__items {
 	list-style: none;
 	margin: 0;
@@ -200,16 +219,25 @@ export default {
 }
 
 .generic-list__item {
+	border-radius: 8px;
+	overflow: hidden;
+}
+
+.generic-list__item-btn {
 	display: flex;
 	align-items: flex-start;
 	gap: 12px;
+	width: 100%;
 	padding: 10px 12px;
 	border-radius: 8px;
 	cursor: pointer;
 	transition: background 0.1s;
+	background: none;
+	border: none;
+	text-align: left;
 }
 
-.generic-list__item:hover {
+.generic-list__item-btn:hover {
 	background: var(--color-background-hover);
 }
 

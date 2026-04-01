@@ -24,6 +24,7 @@
 						controls
 						preload="none"
 						:src="audioSrc(item)"
+						:aria-label="fileName(item)"
 						class="audio-list__player"
 						@error="markBroken(item.id)"
 					/>
@@ -48,19 +49,20 @@
 					target="_blank"
 					rel="noopener noreferrer"
 					class="audio-list__download"
-					:title="t('talk_browser', 'Open in Files')"
+					:aria-label="t('talk_browser', 'Open {name} in Files (opens in new tab)', { name: fileName(item) })"
 				>
 					<span class="icon-external" aria-hidden="true" />
 				</a>
 			</li>
 		</ul>
 
-		<div v-if="loading" class="audio-list__loading">
-			<NcLoadingIcon :size="32" />
+		<div v-if="loading" class="audio-list__loading" role="status" aria-live="polite">
+			<NcLoadingIcon :size="32" aria-hidden="true" />
+			<span class="sr-only">{{ t('talk_browser', 'Loading audio…') }}</span>
 		</div>
 
-		<div v-if="loadingMore" class="audio-list__loading-more">
-			<NcLoadingIcon :size="24" />
+		<div v-if="loadingMore" class="audio-list__loading-more" role="status" aria-live="polite">
+			<NcLoadingIcon :size="24" aria-hidden="true" />
 			<span class="audio-list__loading-note">
 				{{ t('talk_browser', 'Loading more…') }}
 			</span>
@@ -182,6 +184,18 @@ export default {
 </script>
 
 <style scoped>
+.sr-only {
+	position: absolute;
+	width: 1px;
+	height: 1px;
+	padding: 0;
+	margin: -1px;
+	overflow: hidden;
+	clip: rect(0, 0, 0, 0);
+	white-space: nowrap;
+	border: 0;
+}
+
 .audio-list__items {
 	list-style: none;
 	margin: 0;

@@ -6,24 +6,25 @@
 			:description="emptyDescription"
 		>
 			<template #icon>
-				<span class="icon-picture" />
+				<span class="icon-picture" aria-hidden="true" />
 			</template>
 		</NcEmptyContent>
 
 		<div v-else class="media-gallery__grid">
-			<div
+			<button
 				v-for="item in filtered"
 				:key="item.id"
 				:data-id="item.id"
 				class="media-gallery__item"
-				:title="item.messageParameters?.file?.name ?? ''"
+				:aria-label="t('talk_browser', 'Open {name} in lightbox', { name: fileName(item) })"
 				@click="openLightbox(item)"
 			>
 				<!-- Thumbnail — works for both images and videos via Nextcloud preview API -->
 				<div class="media-gallery__thumb-wrap">
 					<img
 						:src="previewUrl(item)"
-						:alt="item.messageParameters?.file?.name ?? ''"
+						:alt="''"
+						aria-hidden="true"
 						class="media-gallery__thumb"
 						loading="lazy"
 						@error="onThumbError"
@@ -31,19 +32,21 @@
 					<span v-if="!isImage(item)" class="media-gallery__play-icon icon-play" aria-hidden="true" />
 				</div>
 
-				<div class="media-gallery__meta">
+				<div class="media-gallery__meta" aria-hidden="true">
 					<span class="media-gallery__name">{{ fileName(item) }}</span>
 					<span class="media-gallery__date">{{ formatDate(item.timestamp) }}</span>
 				</div>
-			</div>
+			</button>
 		</div>
 
-		<div v-if="loading" class="media-gallery__loading">
-			<NcLoadingIcon :size="32" />
+		<div v-if="loading" class="media-gallery__loading" role="status" aria-live="polite">
+			<NcLoadingIcon :size="32" aria-hidden="true" />
+			<span class="sr-only">{{ t('talk_browser', 'Loading media…') }}</span>
 		</div>
 
-		<div v-if="loadingMore" class="media-gallery__loading-more">
-			<NcLoadingIcon :size="24" />
+		<div v-if="loadingMore" class="media-gallery__loading-more" role="status" aria-live="polite">
+			<NcLoadingIcon :size="24" aria-hidden="true" />
+			<span class="sr-only">{{ t('talk_browser', 'Loading more media…') }}</span>
 		</div>
 
 		<div v-if="hasMore && !loading && !loadingMore" class="media-gallery__more">
@@ -76,7 +79,7 @@
 						</template>
 					</NcButton>
 
-					<span class="media-gallery__lightbox-counter">
+					<span class="media-gallery__lightbox-counter" aria-live="polite" aria-atomic="true">
 						{{ lightboxIndex + 1 }} / {{ filtered.length }}
 					</span>
 
@@ -108,14 +111,15 @@
 					:key="lightboxItem.id"
 					:src="fullUrl(lightboxItem)"
 					controls
-					autoplay
+					:aria-label="fileName(lightboxItem)"
 					class="media-gallery__lightbox-video"
 				/>
 				<div class="media-gallery__lightbox-meta">
 					<span class="media-gallery__lightbox-name">{{ fileName(lightboxItem) }}</span>
 					<span class="media-gallery__lightbox-date">{{ formatDate(lightboxItem.timestamp) }}</span>
 					<a
-						:href="safeUrl(lightboxItem.messageParameters?.file?.link) || '#'"
+						v-if="safeUrl(lightboxItem.messageParameters && lightboxItem.messageParameters.file && lightboxItem.messageParameters.file.link)"
+						:href="safeUrl(lightboxItem.messageParameters.file.link)"
 						target="_blank"
 						rel="noopener noreferrer"
 						class="media-gallery__lightbox-open"
@@ -249,6 +253,7 @@ export default {
 		},
 
 		openLightbox(item) {
+			this._triggerEl = document.activeElement
 			const idx = this.filtered.indexOf(item)
 			this.lightboxIndex = idx >= 0 ? idx : null
 			if (this.lightboxIndex !== null) {
@@ -259,6 +264,7 @@ export default {
 		closeLightbox() {
 			this.lightboxIndex = null
 			window.removeEventListener('keydown', this._onKeydown)
+			this.$nextTick(() => this._triggerEl?.focus())
 		},
 
 		stepLightbox(delta) {
@@ -288,6 +294,18 @@ export default {
 </script>
 
 <style scoped>
+.sr-only {
+	position: absolute;
+	width: 1px;
+	height: 1px;
+	padding: 0;
+	margin: -1px;
+	overflow: hidden;
+	clip: rect(0, 0, 0, 0);
+	white-space: nowrap;
+	border: 0;
+}
+
 .media-gallery__thumb-wrap {
 	position: relative;
 	width: 100%;
@@ -317,7 +335,7 @@ export default {
 	transform: translate(-50%, -50%);
 	width: 36px;
 	height: 36px;
-	background: rgba(0, 0, 0, 0.55);
+	background: var(--color-box-shadow, rgba(0, 0, 0, 0.55));
 	border-radius: 50%;
 	pointer-events: none;
 }
@@ -335,10 +353,12 @@ export default {
 	cursor: pointer;
 	transition: box-shadow 0.15s, transform 0.15s;
 	background: var(--color-background-dark);
+	padding: 0;
+	text-align: left;
 }
 
 .media-gallery__item:hover {
-	box-shadow: 0 2px 12px rgba(0, 0, 0, 0.15);
+	box-shadow: 0 2px 12px var(--color-box-shadow, rgba(0, 0, 0, 0.15));
 	transform: translateY(-2px);
 }
 

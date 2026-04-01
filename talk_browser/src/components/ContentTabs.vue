@@ -1,23 +1,27 @@
 <template>
 	<div class="content-tabs">
 		<!-- Tab bar -->
-		<nav class="content-tabs__nav" aria-label="Content types">
+		<div class="content-tabs__nav" role="tablist" :aria-label="t('talk_browser', 'Content types')">
 			<button
 				v-for="tab in tabs"
+				:id="`tb-tab-${tab.id}`"
 				:key="tab.id"
+				role="tab"
+				:aria-selected="activeTab === tab.id"
+				:aria-controls="`tb-panel-${tab.id}`"
 				:class="['content-tabs__tab', { 'content-tabs__tab--active': activeTab === tab.id }]"
 				@click="selectTab(tab.id)"
 			>
 				<span :class="['content-tabs__icon', tab.icon]" aria-hidden="true" />
 				<span class="content-tabs__label">{{ t('talk_browser', tab.label) }}</span>
 			</button>
-		</nav>
+		</div>
 
 		<!-- Search bar (hidden on overview tab) -->
 		<div v-if="activeTab !== 'overview'" class="content-tabs__search">
 			<NcTextField
 				:value="searchQuery"
-				:label="t('talk_browser', 'Search…')"
+				:label="searchLabel"
 				:show-trailing-button="searchQuery.length > 0"
 				trailing-button-icon="close"
 				@update:value="onSearch"
@@ -30,7 +34,12 @@
 		</div>
 
 		<!-- Tab content slot -->
-		<div class="content-tabs__body">
+		<div
+			:id="`tb-panel-${activeTab}`"
+			class="content-tabs__body"
+			role="tabpanel"
+			:aria-labelledby="`tb-tab-${activeTab}`"
+		>
 			<slot :active-tab="activeTab" :search-query="searchQuery" />
 		</div>
 	</div>
@@ -63,6 +72,13 @@ export default {
 	computed: {
 		activeTab() {
 			return this.value
+		},
+
+		searchLabel() {
+			const tab = this.tabs.find(tab => tab.id === this.activeTab)
+			return tab
+				? t('talk_browser', 'Search {type}', { type: t('talk_browser', tab.label) })
+				: t('talk_browser', 'Search…')
 		},
 	},
 

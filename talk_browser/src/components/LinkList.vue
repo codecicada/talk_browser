@@ -23,10 +23,10 @@
 				rel="noopener noreferrer"
 				class="link-list__link"
 			>
-					<!-- Favicon -->
-					<img
+				<!-- Favicon -->
+				<img
 						:src="faviconUrl(item.url)"
-						:alt="''"
+						alt=""
 						class="link-list__favicon"
 						loading="lazy"
 						@error="onFaviconError"
@@ -52,15 +52,16 @@
 			</li>
 		</ul>
 
-		<div v-if="loading" class="link-list__loading">
-			<NcLoadingIcon :size="32" />
+		<div v-if="loading" class="link-list__loading" role="status" aria-live="polite">
+			<NcLoadingIcon :size="32" aria-hidden="true" />
 			<span v-if="!linkScanDone" class="link-list__scan-note">
 				{{ t('talk_browser', 'Scanning message history for links…') }}
 			</span>
+			<span v-else class="sr-only">{{ t('talk_browser', 'Loading…') }}</span>
 		</div>
 
-		<div v-if="loadingMore" class="link-list__loading-more">
-			<NcLoadingIcon :size="24" />
+		<div v-if="loadingMore" class="link-list__loading-more" role="status" aria-live="polite">
+			<NcLoadingIcon :size="24" aria-hidden="true" />
 			<span class="link-list__scan-note">
 				{{ t('talk_browser', 'Scanning more history…') }}
 			</span>
@@ -175,6 +176,18 @@ export default {
 </script>
 
 <style scoped>
+.sr-only {
+	position: absolute;
+	width: 1px;
+	height: 1px;
+	padding: 0;
+	margin: -1px;
+	overflow: hidden;
+	clip: rect(0, 0, 0, 0);
+	white-space: nowrap;
+	border: 0;
+}
+
 .link-list__items {
 	list-style: none;
 	margin: 0;
