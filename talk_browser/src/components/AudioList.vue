@@ -19,11 +19,17 @@
 				<!-- Inline HTML5 audio player -->
 				<div class="audio-list__player-wrap">
 					<audio
+						v-if="!brokenSrc[item.id]"
 						controls
 						preload="none"
 						:src="audioSrc(item)"
 						class="audio-list__player"
+						@error="markBroken(item.id)"
 					/>
+					<span v-else class="audio-list__broken">
+						<span :class="isVoice ? 'icon-microphone' : 'icon-sound'" aria-hidden="true" />
+						{{ t('talk_browser', 'Audio unavailable') }}
+					</span>
 				</div>
 
 				<div class="audio-list__info">
@@ -84,6 +90,12 @@ export default {
 		isVoice: { type: Boolean, default: false },
 	},
 
+	data() {
+		return {
+			brokenSrc: {},
+		}
+	},
+
 	computed: {
 		filtered() {
 			if (!this.search) return this.items
@@ -115,6 +127,10 @@ export default {
 
 	methods: {
 		t,
+
+		markBroken(id) {
+			this.$set(this.brokenSrc, id, true)
+		},
 
 		fileName(item) {
 			return item.messageParameters?.file?.name ?? 'Audio'
@@ -160,6 +176,16 @@ export default {
 	border-radius: 8px;
 	border: 1px solid var(--color-border);
 	background: var(--color-background-dark);
+}
+
+.audio-list__broken {
+	display: flex;
+	align-items: center;
+	gap: 6px;
+	font-size: 12px;
+	color: var(--color-text-maxcontrast);
+	opacity: 0.7;
+	min-width: 200px;
 }
 
 .audio-list__player-wrap {
