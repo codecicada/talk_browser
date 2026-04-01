@@ -54,9 +54,8 @@ class PageController extends Controller {
     private function serveSpa(): TemplateResponse {
         $user = $this->userSession->getUser();
 
-        // Pass minimal bootstrap data to the Vue app via initial state
+        // Pass the user ID to the Vue app for avatar lookups
         $this->initialState->provideInitialState('user-id', $user?->getUID() ?? '');
-        $this->initialState->provideInitialState('user-display-name', $user?->getDisplayName() ?? '');
 
         return new TemplateResponse(Application::APP_ID, 'main');
     }

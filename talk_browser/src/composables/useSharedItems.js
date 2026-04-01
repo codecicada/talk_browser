@@ -43,6 +43,10 @@ export function useSharedItems(tokenRef, objectTypeRef) {
 				hasMore.value = cursor.value !== null
 			}
 		} catch (err) {
+			if (process.env.NODE_ENV !== 'production') {
+				// eslint-disable-next-line no-console
+				console.warn('[talk_browser] loadItems error:', err)
+			}
 			error.value = err?.response?.data?.ocs?.meta?.message
 				?? err?.message
 				?? 'Failed to load items'
@@ -94,14 +98,19 @@ export function useSharedItems(tokenRef, objectTypeRef) {
 					linkMap.value.set(url, { ...existing, count: existing.count + 1 })
 				} else {
 					linkMap.value.set(url, {
-						id: `link-${url}`,
-						messageId: m.id,
-						timestamp: m.timestamp,
-						actorDisplayName: m.actorDisplayName,
-						url,
-						title: m.message.trim() !== url ? m.message.trim() : url,
-						count: 1,
-					})
+					id: `link-${url}`,
+					messageId: m.id,
+					timestamp: m.timestamp,
+					actorDisplayName: m.actorDisplayName,
+					url,
+					// Use message text as title only if it adds something beyond the URL itself;
+					// strip the URL from the text and truncate to avoid social-engineering abuse (F-14)
+					title: (() => {
+						const stripped = m.message.trim().replace(url, '').trim()
+						return stripped.length > 0 ? stripped.slice(0, 150) : url
+					})(),
+					count: 1,
+				})
 				}
 			}
 		}

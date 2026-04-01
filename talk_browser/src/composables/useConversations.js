@@ -40,6 +40,10 @@ export function useConversations() {
 			const preferred = preferredToken && allConversations.find(c => c.token === preferredToken)
 			selectedToken.value = preferred ? preferred.token : noteToSelf.token
 		} catch (err) {
+			if (process.env.NODE_ENV !== 'production') {
+				// eslint-disable-next-line no-console
+				console.warn('[talk_browser] loadConversations error:', err)
+			}
 			error.value = err?.response?.data?.ocs?.meta?.message
 				?? err?.message
 				?? 'Failed to load conversations'

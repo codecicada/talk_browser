@@ -160,5 +160,8 @@ const URL_REGEX = /https?:\/\/[^\s<>"{}|\\^`[\]]+/gi
  */
 export function extractUrls(text) {
 	const matches = text.match(URL_REGEX) ?? []
-	return [...new Set(matches)]
+	// Strip trailing punctuation that is typically not part of a URL
+	// (e.g. "see https://example.com." or "visit https://example.com)")
+	const cleaned = matches.map(u => u.replace(/[.,;:!?)'">]+$/, ''))
+	return [...new Set(cleaned)]
 }

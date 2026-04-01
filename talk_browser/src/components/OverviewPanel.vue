@@ -5,7 +5,7 @@
 		<NcEmptyContent
 			v-else-if="error"
 			:name="t('talk_browser', 'Could not load overview')"
-			:description="error"
+			:description="t('talk_browser', 'There was a problem loading the overview. Please try selecting the conversation again.')"
 		>
 			<template #icon>
 				<span class="icon-error" />
@@ -80,6 +80,7 @@ import { NcEmptyContent, NcLoadingIcon } from '@nextcloud/vue'
 import { getRootUrl } from '@nextcloud/router'
 import { translate as t } from '@nextcloud/l10n'
 import { TABS } from '../constants.js'
+import { safeFileId } from '../utils/url.js'
 
 export default {
 	name: 'OverviewPanel',
@@ -127,7 +128,7 @@ export default {
 		},
 
 		previewUrl(item) {
-			const fileId = item.messageParameters?.file?.id
+			const fileId = safeFileId(item.messageParameters?.file?.id)
 			if (!fileId) return ''
 			return `${getRootUrl()}/index.php/core/preview?fileId=${fileId}&x=120&y=120&a=true`
 		},

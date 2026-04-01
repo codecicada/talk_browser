@@ -56,6 +56,7 @@
 <script>
 import { NcButton, NcEmptyContent, NcLoadingIcon } from '@nextcloud/vue'
 import { translate as t } from '@nextcloud/l10n'
+import { safeUrl } from '../utils/url.js'
 
 export default {
 	name: 'FileList',
@@ -110,7 +111,9 @@ export default {
 		t,
 
 		scrollToItem(id) {
-			const el = this.$el.querySelector(`[data-id="${id}"]`)
+			const safeId = parseInt(id, 10)
+			if (!Number.isFinite(safeId)) return
+			const el = this.$el.querySelector(`[data-id="${safeId}"]`)
 			if (!el) return
 			el.scrollIntoView({ behavior: 'smooth', block: 'center' })
 			el.classList.add('file-list__item--highlight')
@@ -149,10 +152,10 @@ export default {
 		},
 
 		openItem(item) {
-			const link = item.messageParameters?.file?.link
-				?? item.messageParameters?.object?.link
+			const link = safeUrl(item.messageParameters?.file?.link
+				?? item.messageParameters?.object?.link)
 			if (link) {
-				window.open(link, '_blank', 'noopener')
+				window.open(link, '_blank', 'noopener,noreferrer')
 			}
 		},
 	},

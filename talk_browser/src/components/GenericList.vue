@@ -66,6 +66,7 @@
 <script>
 import { NcButton, NcEmptyContent, NcLoadingIcon } from '@nextcloud/vue'
 import { translate as t } from '@nextcloud/l10n'
+import { safeUrl } from '../utils/url.js'
 
 export default {
 	name: 'GenericList',
@@ -162,7 +163,9 @@ export default {
 		},
 
 		scrollToItem(id) {
-			const el = this.$el.querySelector(`[data-id="${id}"]`)
+			const safeId = parseInt(id, 10)
+			if (!Number.isFinite(safeId)) return
+			const el = this.$el.querySelector(`[data-id="${safeId}"]`)
 			if (!el) return
 			el.scrollIntoView({ behavior: 'smooth', block: 'center' })
 			el.classList.add('generic-list__item--highlight')
@@ -172,14 +175,17 @@ export default {
 		mapUrl(item) {
 			const obj = item.messageParameters?.object
 			if (obj?.type !== 'geo-location') return null
-			return `https://www.openstreetmap.org/?mlat=${obj.latitude}&mlon=${obj.longitude}&zoom=15`
+			const lat = parseFloat(obj.latitude)
+			const lon = parseFloat(obj.longitude)
+			if (!Number.isFinite(lat) || !Number.isFinite(lon)) return null
+			return `https://www.openstreetmap.org/?mlat=${lat}&mlon=${lon}&zoom=15`
 		},
 
 		openItem(item) {
-			const link = item.messageParameters?.object?.link
-				?? item.messageParameters?.file?.link
+			const link = safeUrl(item.messageParameters?.object?.link
+				?? item.messageParameters?.file?.link)
 			if (link) {
-				window.open(link, '_blank', 'noopener')
+				window.open(link, '_blank', 'noopener,noreferrer')
 			}
 		},
 	},

@@ -77,12 +77,12 @@
 				<div class="media-gallery__lightbox-meta">
 					<span class="media-gallery__lightbox-name">{{ fileName(lightboxItem) }}</span>
 					<span class="media-gallery__lightbox-date">{{ formatDate(lightboxItem.timestamp) }}</span>
-					<a
-						:href="lightboxItem.messageParameters?.file?.link"
-						target="_blank"
-						rel="noopener noreferrer"
-						class="media-gallery__lightbox-open"
-					>
+				<a
+					:href="safeUrl(lightboxItem.messageParameters?.file?.link) || '#'"
+					target="_blank"
+					rel="noopener noreferrer"
+					class="media-gallery__lightbox-open"
+				>
 						{{ t('talk_browser', 'Open in Files') }}
 						<span class="icon-external" aria-hidden="true" />
 					</a>
@@ -96,6 +96,7 @@
 import { NcButton, NcEmptyContent, NcLoadingIcon, NcModal } from '@nextcloud/vue'
 import { getRootUrl } from '@nextcloud/router'
 import { translate as t } from '@nextcloud/l10n'
+import { safeUrl, safeWebdavUrl, safeFileId } from '../utils/url.js'
 
 export default {
 	name: 'MediaGallery',
@@ -154,6 +155,7 @@ export default {
 
 	methods: {
 		t,
+		safeUrl,
 
 		fileName(item) {
 			return item.messageParameters?.file?.name
@@ -167,7 +169,7 @@ export default {
 		},
 
 		previewUrl(item) {
-			const fileId = item.messageParameters?.file?.id
+			const fileId = safeFileId(item.messageParameters?.file?.id)
 			if (!fileId) return ''
 			return `${getRootUrl()}/index.php/core/preview?fileId=${fileId}&x=200&y=200&a=true`
 		},
@@ -177,14 +179,12 @@ export default {
 			if (!file) return ''
 			// Images: use the high-res preview API
 			if (this.isImage(item)) {
-				return `${getRootUrl()}/index.php/core/preview?fileId=${file.id}&x=2048&y=2048&a=true`
+				const fileId = safeFileId(file.id)
+				if (!fileId) return ''
+				return `${getRootUrl()}/index.php/core/preview?fileId=${fileId}&x=2048&y=2048&a=true`
 			}
-			// Videos: stream directly via WebDAV (encode each segment, preserve slashes)
-			if (file.path) {
-				const encoded = file.path.split('/').map(encodeURIComponent).join('/')
-				return `${getRootUrl()}/remote.php/webdav/${encoded}`
-			}
-			return ''
+			// Videos: stream directly via WebDAV
+			return safeWebdavUrl(file.path)
 		},
 
 		formatDate(timestamp) {
@@ -194,7 +194,9 @@ export default {
 		},
 
 		scrollToItem(id) {
-			const el = this.$el.querySelector(`[data-id="${id}"]`)
+			const safeId = parseInt(id, 10)
+			if (!Number.isFinite(safeId)) return
+			const el = this.$el.querySelector(`[data-id="${safeId}"]`)
 			if (!el) return
 			el.scrollIntoView({ behavior: 'smooth', block: 'center' })
 			el.classList.add('media-gallery__item--highlight')

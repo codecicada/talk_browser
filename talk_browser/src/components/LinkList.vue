@@ -17,12 +17,12 @@
 			:data-id="item.id"
 			class="link-list__item"
 		>
-				<a
-					:href="item.url"
-					target="_blank"
-					rel="noopener noreferrer"
-					class="link-list__link"
-				>
+			<a
+				:href="safeUrl(item.url) || '#'"
+				target="_blank"
+				rel="noopener noreferrer"
+				class="link-list__link"
+			>
 					<!-- Favicon -->
 					<img
 						:src="faviconUrl(item.url)"
@@ -77,6 +77,7 @@
 <script>
 import { NcButton, NcEmptyContent, NcLoadingIcon } from '@nextcloud/vue'
 import { translate as t } from '@nextcloud/l10n'
+import { safeUrl } from '../utils/url.js'
 
 export default {
 	name: 'LinkList',
@@ -131,9 +132,12 @@ export default {
 
 	methods: {
 		t,
+		safeUrl,
 
 		scrollToItem(id) {
-			const el = this.$el.querySelector(`[data-id="${id}"]`)
+			const safeId = parseInt(id, 10)
+			if (!Number.isFinite(safeId)) return
+			const el = this.$el.querySelector(`[data-id="${safeId}"]`)
 			if (!el) return
 			el.scrollIntoView({ behavior: 'smooth', block: 'center' })
 			el.classList.add('link-list__item--highlight')
@@ -147,8 +151,10 @@ export default {
 
 		faviconUrl(url) {
 			try {
-				const origin = new URL(url).origin
-				return `${origin}/favicon.ico`
+				const parsed = new URL(url)
+				// Only load favicons for http/https origins (F-03)
+				if (parsed.protocol !== 'https:' && parsed.protocol !== 'http:') return ''
+				return `${parsed.origin}/favicon.ico`
 			} catch {
 				return ''
 			}

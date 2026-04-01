@@ -123,8 +123,10 @@ export default {
 		 * Appends avatarVersion as a cache-buster when available.
 		 */
 		roomAvatarUrl(conv) {
-			const base = `${getRootUrl()}/ocs/v2.php/apps/spreed/api/v1/room/${conv.token}/avatar`
-			return conv.avatarVersion ? `${base}?v=${conv.avatarVersion}` : base
+			const base = `${getRootUrl()}/ocs/v2.php/apps/spreed/api/v1/room/${encodeURIComponent(conv.token)}/avatar`
+			return conv.avatarVersion
+				? `${base}?v=${encodeURIComponent(conv.avatarVersion)}`
+				: base
 		},
 	},
 }

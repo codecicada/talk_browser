@@ -23,7 +23,7 @@
 			<NcEmptyContent
 				v-else-if="conversationsError"
 				:name="t('talk_browser', 'Could not load conversations')"
-				:description="conversationsError"
+				:description="t('talk_browser', 'There was a problem connecting to Nextcloud Talk. Please check your connection and try again.')"
 			>
 				<template #icon>
 					<span class="icon-error" />
@@ -67,11 +67,11 @@
 				/>
 
 						<!-- Item loading error (non-overview tabs) -->
-						<NcEmptyContent
-							v-else-if="itemsError && !itemsLoading"
-							:name="t('talk_browser', 'Could not load content')"
-							:description="itemsError"
-						>
+					<NcEmptyContent
+						v-else-if="itemsError && !itemsLoading"
+						:name="t('talk_browser', 'Could not load content')"
+						:description="t('talk_browser', 'There was a problem loading shared items. Please try again.')"
+					>
 							<template #icon>
 								<span class="icon-error" />
 							</template>
@@ -219,16 +219,16 @@ export default {
 		function parsePath() {
 			// Strip the base prefix, then split the remainder
 			const rest = window.location.pathname.replace(BASE, '').replace(/^\//, '')
-			const [token, tab] = rest.split('/')
+			const [rawToken, rawTab] = rest.split('/')
 			return {
-				token: token || null,
-				tab: VALID_TABS.includes(tab) ? tab : null,
+				token: rawToken ? decodeURIComponent(rawToken) : null,
+				tab: VALID_TABS.includes(rawTab) ? rawTab : null,
 			}
 		}
 
 		function updatePath(token, tab) {
 			const path = token
-				? `${BASE}/${token}/${tab ?? 'overview'}`
+				? `${BASE}/${encodeURIComponent(token)}/${tab ?? 'overview'}`
 				: `${BASE}/`
 			if (window.location.pathname !== path) {
 				window.history.replaceState(null, '', path)
@@ -282,6 +282,10 @@ export default {
 				const result = await fetchShareOverview(token)
 				overviewData.value = result
 			} catch (err) {
+				if (process.env.NODE_ENV !== 'production') {
+					// eslint-disable-next-line no-console
+					console.warn('[talk_browser] fetchShareOverview error:', err)
+				}
 				overviewError.value = err?.response?.data?.ocs?.meta?.message
 					?? err?.message
 					?? 'Failed to load overview'

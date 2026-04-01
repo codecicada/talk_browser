@@ -76,8 +76,8 @@
 
 <script>
 import { NcButton, NcEmptyContent, NcLoadingIcon } from '@nextcloud/vue'
-import { getRootUrl } from '@nextcloud/router'
 import { translate as t } from '@nextcloud/l10n'
+import { safeUrl, safeWebdavUrl } from '../utils/url.js'
 
 export default {
 	name: 'AudioList',
@@ -147,7 +147,9 @@ export default {
 		t,
 
 		scrollToItem(id) {
-			const el = this.$el.querySelector(`[data-id="${id}"]`)
+			const safeId = parseInt(id, 10)
+			if (!Number.isFinite(safeId)) return
+			const el = this.$el.querySelector(`[data-id="${safeId}"]`)
 			if (!el) return
 			el.scrollIntoView({ behavior: 'smooth', block: 'center' })
 			el.classList.add('audio-list__item--highlight')
@@ -163,16 +165,11 @@ export default {
 		},
 
 		fileLink(item) {
-			return item.messageParameters?.file?.link ?? null
+			return safeUrl(item.messageParameters?.file?.link ?? null)
 		},
 
 		audioSrc(item) {
-			// Use the Nextcloud WebDAV path to stream directly.
-			// Encode each path segment individually so that '/' separators are preserved.
-			const path = item.messageParameters?.file?.path
-			if (!path) return ''
-			const encoded = path.split('/').map(encodeURIComponent).join('/')
-			return `${getRootUrl()}/remote.php/webdav/${encoded}`
+			return safeWebdavUrl(item.messageParameters?.file?.path)
 		},
 
 		formatDate(timestamp) {
