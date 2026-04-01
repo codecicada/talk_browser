@@ -235,7 +235,6 @@ export default {
 			selectedToken,
 			selectedConversation,
 			load: loadConversations,
-			selectConversation,
 		} = useConversations()
 
 		// ── Active tab ───────────────────────────────────────────────────────
@@ -269,7 +268,6 @@ export default {
 				const result = await fetchShareOverview(token)
 				overviewData.value = result
 			} catch (err) {
-				console.error('[TalkBrowser] fetchShareOverview error:', err)
 				overviewData.value = {}
 			} finally {
 				overviewLoading.value = false
@@ -316,7 +314,6 @@ export default {
 			selectedToken,
 			selectedConversation,
 			loadConversations,
-			selectConversation,
 			// tabs
 			activeTab,
 			// overview
