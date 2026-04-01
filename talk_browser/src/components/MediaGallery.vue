@@ -158,13 +158,18 @@ export default {
 		},
 
 		fullUrl(item) {
-			const fileId = item.messageParameters?.file?.id
-			if (!fileId) return ''
-			// Use a large preview for images; for video fall back to the Files link
+			const file = item.messageParameters?.file
+			if (!file) return ''
+			// Images: use the high-res preview API
 			if (this.isImage(item)) {
-				return `${getRootUrl()}/index.php/core/preview?fileId=${fileId}&x=2048&y=2048&a=true`
+				return `${getRootUrl()}/index.php/core/preview?fileId=${file.id}&x=2048&y=2048&a=true`
 			}
-			return item.messageParameters?.file?.link ?? ''
+			// Videos: stream directly via WebDAV (encode each segment, preserve slashes)
+			if (file.path) {
+				const encoded = file.path.split('/').map(encodeURIComponent).join('/')
+				return `${getRootUrl()}/remote.php/webdav/${encoded}`
+			}
+			return ''
 		},
 
 		formatDate(timestamp) {
