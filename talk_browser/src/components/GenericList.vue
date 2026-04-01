@@ -29,6 +29,17 @@
 					<span v-if="itemDescription(item)" class="generic-list__desc">
 						{{ itemDescription(item) }}
 					</span>
+					<a
+						v-if="mapUrl(item)"
+						:href="mapUrl(item)"
+						target="_blank"
+						rel="noopener noreferrer"
+						class="generic-list__map-link"
+						@click.stop
+					>
+						{{ t('talk_browser', 'Open on map') }}
+						<span class="icon-external" aria-hidden="true" />
+					</a>
 				</div>
 
 				<span class="icon-external generic-list__open-icon" aria-hidden="true" />
@@ -135,6 +146,12 @@ export default {
 			})
 		},
 
+		mapUrl(item) {
+			const obj = item.messageParameters?.object
+			if (obj?.type !== 'geo-location') return null
+			return `https://www.openstreetmap.org/?mlat=${obj.latitude}&mlon=${obj.longitude}&zoom=15`
+		},
+
 		openItem(item) {
 			const link = item.messageParameters?.object?.link
 				?? item.messageParameters?.file?.link
@@ -207,6 +224,15 @@ export default {
 	height: 16px;
 	opacity: 0.4;
 	margin-top: 4px;
+}
+
+.generic-list__map-link {
+	display: inline-flex;
+	align-items: center;
+	gap: 4px;
+	font-size: 12px;
+	color: var(--color-primary-element);
+	margin-top: 2px;
 }
 
 .generic-list__loading,
