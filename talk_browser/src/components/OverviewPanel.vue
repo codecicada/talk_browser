@@ -120,7 +120,7 @@ export default {
 
 		formatDate(timestamp) {
 			return new Date(timestamp * 1000).toLocaleDateString(undefined, {
-				month: 'short', day: 'numeric',
+				year: 'numeric', month: 'short', day: 'numeric',
 			})
 		},
 
