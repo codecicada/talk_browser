@@ -34,6 +34,24 @@ class PageController extends Controller {
     #[NoCSRFRequired]
     #[NoAdminRequired]
     public function index(): TemplateResponse {
+        return $this->serveSpa();
+    }
+
+    /** /apps/talk_browser/{token} */
+    #[NoCSRFRequired]
+    #[NoAdminRequired]
+    public function token(string $token): TemplateResponse {
+        return $this->serveSpa();
+    }
+
+    /** /apps/talk_browser/{token}/{tab} */
+    #[NoCSRFRequired]
+    #[NoAdminRequired]
+    public function tokenTab(string $token, string $tab): TemplateResponse {
+        return $this->serveSpa();
+    }
+
+    private function serveSpa(): TemplateResponse {
         $user = $this->userSession->getUser();
 
         // Pass minimal bootstrap data to the Vue app via initial state

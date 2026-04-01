@@ -17,9 +17,11 @@ export function useConversations() {
 	)
 
 	/**
-	 * Load all conversations and pre-select Note to Self.
+	 * Load all conversations and pre-select the preferred token when given,
+	 * otherwise default to Note to Self.
+	 * @param {string|null} preferredToken  token from the URL hash (optional)
 	 */
-	async function load() {
+	async function load(preferredToken = null) {
 		loading.value = true
 		error.value = null
 		try {
@@ -33,8 +35,10 @@ export function useConversations() {
 			const withoutNts = all.filter(c => c.type !== CONVERSATION_TYPE.NOTE_TO_SELF)
 			conversations.value = [noteToSelf, ...withoutNts]
 
-			// Default selection: Note to Self
-			selectedToken.value = noteToSelf.token
+			// Restore from URL hash if the token exists in the list, else fall back to Note to Self
+			const allConversations = conversations.value
+			const preferred = preferredToken && allConversations.find(c => c.token === preferredToken)
+			selectedToken.value = preferred ? preferred.token : noteToSelf.token
 		} catch (err) {
 			error.value = err?.response?.data?.ocs?.meta?.message
 				?? err?.message

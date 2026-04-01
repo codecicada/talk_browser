@@ -166,7 +166,8 @@ import {
 	NcLoadingIcon,
 } from '@nextcloud/vue'
 import { translate as t } from '@nextcloud/l10n'
-import { ref, watch } from 'vue'
+import { ref, watch, onMounted } from 'vue'
+import { generateUrl } from '@nextcloud/router'
 
 import ConversationPicker from './components/ConversationPicker.vue'
 import ContentTabs from './components/ContentTabs.vue'
@@ -202,6 +203,30 @@ export default {
 	},
 
 	setup() {
+		// ── URL path helpers ─────────────────────────────────────────────────
+		const VALID_TABS = ['overview', 'media', 'file', 'audio', 'voice', 'links', 'location', 'other']
+		// Base path: e.g. "/apps/talk_browser" (handles subdirectory Nextcloud installs)
+		const BASE = generateUrl('/apps/talk_browser').replace(/\/$/, '')
+
+		function parsePath() {
+			// Strip the base prefix, then split the remainder
+			const rest = window.location.pathname.replace(BASE, '').replace(/^\//, '')
+			const [token, tab] = rest.split('/')
+			return {
+				token: token || null,
+				tab: VALID_TABS.includes(tab) ? tab : null,
+			}
+		}
+
+		function updatePath(token, tab) {
+			const path = token
+				? `${BASE}/${token}/${tab ?? 'overview'}`
+				: `${BASE}/`
+			if (window.location.pathname !== path) {
+				window.history.replaceState(null, '', path)
+			}
+		}
+
 		// ── Conversations ────────────────────────────────────────────────────
 		const {
 			conversations,
@@ -259,6 +284,30 @@ export default {
 			objectTypeRef.value = tab
 		})
 
+		// ── Sync state → URL path ────────────────────────────────────────────
+		watch([selectedToken, activeTab], ([token, tab]) => {
+			updatePath(token, tab)
+		})
+
+		// ── On mount: restore state from URL path ────────────────────────────
+		onMounted(async () => {
+			const { token: hashToken, tab: hashTab } = parsePath()
+
+			await loadConversations(hashToken)
+
+			// After loadConversations, the selectedToken watcher fires and resets
+			// activeTab to 'overview'. We wait for the next microtask tick so the
+			// overview fetch triggered by that watcher has started, then apply the
+			// hash tab on top — the overview fetch continues in the background and
+			// overviewLoading guards the UI.
+			if (hashToken && hashTab && hashTab !== 'overview' && selectedToken.value === hashToken) {
+				// Let the watcher's async overview-fetch kick off first
+				await Promise.resolve()
+				activeTab.value = hashTab
+				objectTypeRef.value = hashTab
+			}
+		})
+
 		return {
 			// conversations
 			conversations,
@@ -283,10 +332,6 @@ export default {
 			loadItems,
 			loadMoreItems,
 		}
-	},
-
-	mounted() {
-		this.loadConversations()
 	},
 
 	methods: {
