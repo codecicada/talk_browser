@@ -304,11 +304,6 @@ export default {
 	animation: tb-highlight-fade 2s ease forwards;
 }
 
-@keyframes tb-highlight-fade {
-	0%   { outline-color: var(--color-primary-element); }
-	100% { outline-color: transparent; }
-}
-
 .media-gallery__loading,
 .media-gallery__loading-more,
 .media-gallery__more {

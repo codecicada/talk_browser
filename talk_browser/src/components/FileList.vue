@@ -185,11 +185,6 @@ export default {
 	animation: tb-highlight-fade 2s ease forwards;
 }
 
-@keyframes tb-highlight-fade {
-	0%   { outline-color: var(--color-primary-element); }
-	100% { outline-color: transparent; }
-}
-
 .file-list__icon-wrap {
 	flex-shrink: 0;
 	width: 36px;

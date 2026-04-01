@@ -11,11 +11,12 @@
 		</NcEmptyContent>
 
 		<ul v-else class="link-list__items">
-			<li
-				v-for="item in filtered"
-				:key="item.id"
-				class="link-list__item"
-			>
+		<li
+			v-for="item in filtered"
+			:key="item.id"
+			:data-id="item.id"
+			class="link-list__item"
+		>
 				<a
 					:href="item.url"
 					target="_blank"
@@ -89,6 +90,20 @@ export default {
 		hasMore: { type: Boolean, default: false },
 		linkScanDone: { type: Boolean, default: false },
 		search: { type: String, default: '' },
+		highlightId: { type: Number, default: null },
+	},
+
+	watch: {
+		highlightId(id) {
+			if (!id) return
+			this.$nextTick(() => this.scrollToItem(id))
+		},
+	},
+
+	mounted() {
+		if (this.highlightId) {
+			this.$nextTick(() => this.scrollToItem(this.highlightId))
+		}
 	},
 
 	computed: {
@@ -116,6 +131,14 @@ export default {
 
 	methods: {
 		t,
+
+		scrollToItem(id) {
+			const el = this.$el.querySelector(`[data-id="${id}"]`)
+			if (!el) return
+			el.scrollIntoView({ behavior: 'smooth', block: 'center' })
+			el.classList.add('link-list__item--highlight')
+			setTimeout(() => el.classList.remove('link-list__item--highlight'), 2000)
+		},
 
 		displayTitle(item) {
 			// Use message text as title if it's more than just the bare URL
@@ -155,6 +178,11 @@ export default {
 .link-list__item {
 	border-radius: 8px;
 	overflow: hidden;
+}
+
+.link-list__item--highlight {
+	outline: 2px solid var(--color-primary-element);
+	animation: tb-highlight-fade 2s ease forwards;
 }
 
 .link-list__link {

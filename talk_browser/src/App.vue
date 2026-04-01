@@ -387,4 +387,10 @@ export default {
 	font-weight: 600;
 	margin: 0 0 4px;
 }
+
+/* Shared highlight animation used by all list components */
+@keyframes tb-highlight-fade {
+	0%   { outline-color: var(--color-primary-element); }
+	100% { outline-color: transparent; }
+}
 </style>
