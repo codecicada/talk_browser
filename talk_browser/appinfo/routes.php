@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 return [
     'routes' => [
-        // OG image proxy (must be before the SPA catch-all routes)
+        // OG image proxy — prefixed with /api/ so it never collides with /{token} SPA routes
         [
             'name' => 'og_image#proxy',
-            'url'  => '/og-image',
+            'url'  => '/api/og-image',
             'verb' => 'GET',
         ],
         // SPA root

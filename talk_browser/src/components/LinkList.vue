@@ -148,10 +148,25 @@ export default {
 		safeUrl,
 
 		ogProxyUrl(url) {
-			return generateUrl('/apps/talk_browser/og-image') + '?url=' + encodeURIComponent(url)
+			const proxyUrl = generateUrl('/apps/talk_browser/api/og-image') + '?url=' + encodeURIComponent(url)
+			console.debug('[TalkBrowser] OG proxy URL for', url, '->', proxyUrl)
+			return proxyUrl
 		},
 
 		onOgError(id) {
+			const item = this.filtered.find(i => i.id === id)
+			const proxyUrl = item ? this.ogProxyUrl(item.url) : '(unknown)'
+			console.warn('[TalkBrowser] OG image failed for item', id, '| proxy URL:', proxyUrl)
+			// Fetch the proxy URL manually to see the actual HTTP response
+			if (item) {
+				fetch(proxyUrl, { credentials: 'same-origin' })
+					.then(r => {
+						console.warn('[TalkBrowser] OG fetch response:', r.status, r.statusText, 'content-type:', r.headers.get('content-type'), '| url:', r.url)
+					})
+					.catch(err => {
+						console.error('[TalkBrowser] OG fetch threw:', err)
+					})
+			}
 			this.$set(this.ogFailed, id, true)
 		},
 
