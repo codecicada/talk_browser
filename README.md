@@ -100,6 +100,8 @@ nexcloud-talk/
     │   ├── App.vue                     # root component & state orchestration
     │   ├── constants.js                # tab definitions, conversation type enums
     │   ├── api/talk.js                 # Talk OCS REST API helpers
+    │   ├── utils/
+    │   │   └── url.js                  # safeUrl(), safeWebdavUrl(), safeFileId() helpers
     │   ├── composables/
     │   │   ├── useConversations.js     # load conversations, default to Note to Self
     │   │   └── useSharedItems.js       # paginated shared items + link extraction
