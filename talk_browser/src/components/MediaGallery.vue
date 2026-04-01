@@ -69,7 +69,10 @@
 						@click="stepLightbox(-1)"
 					>
 						<template #icon>
-							<span class="icon-arrow-left" aria-hidden="true" />
+							<!-- chevron-left -->
+							<svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+								<polyline points="15 18 9 12 15 6" />
+							</svg>
 						</template>
 					</NcButton>
 
@@ -84,7 +87,10 @@
 						@click="stepLightbox(1)"
 					>
 						<template #icon>
-							<span class="icon-arrow-right" aria-hidden="true" />
+							<!-- chevron-right -->
+							<svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+								<polyline points="9 18 15 12 9 6" />
+							</svg>
 						</template>
 					</NcButton>
 				</div>
