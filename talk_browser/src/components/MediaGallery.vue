@@ -57,11 +57,41 @@
 			v-if="lightboxItem"
 			:name="fileName(lightboxItem)"
 			size="large"
-			@close="lightboxItem = null"
+			@close="closeLightbox"
 		>
 			<div class="media-gallery__lightbox">
+				<!-- Prev / Next nav -->
+				<div class="media-gallery__lightbox-nav">
+					<NcButton
+						:disabled="lightboxIndex === 0"
+						:aria-label="t('talk_browser', 'Previous')"
+						type="tertiary"
+						@click="stepLightbox(-1)"
+					>
+						<template #icon>
+							<span class="icon-arrow-left" aria-hidden="true" />
+						</template>
+					</NcButton>
+
+					<span class="media-gallery__lightbox-counter">
+						{{ lightboxIndex + 1 }} / {{ filtered.length }}
+					</span>
+
+					<NcButton
+						:disabled="lightboxIndex === filtered.length - 1"
+						:aria-label="t('talk_browser', 'Next')"
+						type="tertiary"
+						@click="stepLightbox(1)"
+					>
+						<template #icon>
+							<span class="icon-arrow-right" aria-hidden="true" />
+						</template>
+					</NcButton>
+				</div>
+
 				<img
 					v-if="isImage(lightboxItem)"
+					:key="lightboxItem.id"
 					:src="fullUrl(lightboxItem)"
 					:alt="fileName(lightboxItem)"
 					class="media-gallery__lightbox-img"
@@ -69,6 +99,7 @@
 				/>
 				<video
 					v-else
+					:key="lightboxItem.id"
 					:src="fullUrl(lightboxItem)"
 					controls
 					autoplay
@@ -77,12 +108,12 @@
 				<div class="media-gallery__lightbox-meta">
 					<span class="media-gallery__lightbox-name">{{ fileName(lightboxItem) }}</span>
 					<span class="media-gallery__lightbox-date">{{ formatDate(lightboxItem.timestamp) }}</span>
-				<a
-					:href="safeUrl(lightboxItem.messageParameters?.file?.link) || '#'"
-					target="_blank"
-					rel="noopener noreferrer"
-					class="media-gallery__lightbox-open"
-				>
+					<a
+						:href="safeUrl(lightboxItem.messageParameters?.file?.link) || '#'"
+						target="_blank"
+						rel="noopener noreferrer"
+						class="media-gallery__lightbox-open"
+					>
 						{{ t('talk_browser', 'Open in Files') }}
 						<span class="icon-external" aria-hidden="true" />
 					</a>
@@ -125,13 +156,21 @@ export default {
 		}
 	},
 
+	beforeDestroy() {
+		window.removeEventListener('keydown', this._onKeydown)
+	},
+
 	data() {
 		return {
-			lightboxItem: null,
+			lightboxIndex: null,
 		}
 	},
 
 	computed: {
+		lightboxItem() {
+			return this.lightboxIndex !== null ? this.filtered[this.lightboxIndex] ?? null : null
+		},
+
 		filtered() {
 			if (!this.search) return this.items
 			const q = this.search.toLowerCase()
@@ -204,7 +243,29 @@ export default {
 		},
 
 		openLightbox(item) {
-			this.lightboxItem = item
+			const idx = this.filtered.indexOf(item)
+			this.lightboxIndex = idx >= 0 ? idx : null
+			if (this.lightboxIndex !== null) {
+				window.addEventListener('keydown', this._onKeydown)
+			}
+		},
+
+		closeLightbox() {
+			this.lightboxIndex = null
+			window.removeEventListener('keydown', this._onKeydown)
+		},
+
+		stepLightbox(delta) {
+			if (this.lightboxIndex === null) return
+			const next = this.lightboxIndex + delta
+			if (next >= 0 && next < this.filtered.length) {
+				this.lightboxIndex = next
+			}
+		},
+
+		_onKeydown(e) {
+			if (e.key === 'ArrowLeft') this.stepLightbox(-1)
+			else if (e.key === 'ArrowRight') this.stepLightbox(1)
 		},
 
 		onThumbError(e) {
@@ -322,6 +383,19 @@ export default {
 	gap: 12px;
 	padding: 16px;
 	max-height: 80vh;
+}
+
+.media-gallery__lightbox-nav {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+}
+
+.media-gallery__lightbox-counter {
+	min-width: 60px;
+	text-align: center;
+	font-size: 13px;
+	color: var(--color-text-maxcontrast);
 }
 
 .media-gallery__lightbox-img,
