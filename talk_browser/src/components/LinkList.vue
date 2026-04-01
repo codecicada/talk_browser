@@ -23,14 +23,10 @@
 				rel="noopener noreferrer"
 				class="link-list__link"
 			>
-				<!-- Favicon -->
-				<img
-						:src="faviconUrl(item.url)"
-						alt=""
-						class="link-list__favicon"
-						loading="lazy"
-						@error="onFaviconError"
-					/>
+				<!-- Link icon -->
+				<svg class="link-list__favicon" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+					<path fill="currentColor" d="M10.59 13.41c.41.39.41 1.03 0 1.42c-.39.41-1.03.41-1.42 0a5.003 5.003 0 0 1 0-7.07l3.54-3.54a5.003 5.003 0 0 1 7.07 0a5.003 5.003 0 0 1 0 7.07l-1.49 1.49c.01-.82-.12-1.64-.4-2.42l.47-.48a2.982 2.982 0 0 0 0-4.24a2.982 2.982 0 0 0-4.24 0l-3.53 3.53a2.982 2.982 0 0 0 0 4.24m2.82-4.24c.39-.41 1.03-.41 1.42 0a5.003 5.003 0 0 1 0 7.07l-3.54 3.54a5.003 5.003 0 0 1-7.07 0a5.003 5.003 0 0 1 0-7.07l1.49-1.49c-.01.82.12 1.64.4 2.43l-.47.47a2.982 2.982 0 0 0 0 4.24a2.982 2.982 0 0 0 4.24 0l3.53-3.53a2.982 2.982 0 0 0 0-4.24a.973.973 0 0 1 0-1.42Z"/>
+				</svg>
 
 				<div class="link-list__info">
 					<span class="link-list__title">
@@ -150,22 +146,6 @@ export default {
 			return item.title && item.title !== item.url ? item.title : item.url
 		},
 
-		faviconUrl(url) {
-			try {
-				const parsed = new URL(url)
-				// Only load favicons for http/https origins (F-03)
-				if (parsed.protocol !== 'https:' && parsed.protocol !== 'http:') return ''
-				return `${parsed.origin}/favicon.ico`
-			} catch {
-				return ''
-			}
-		},
-
-		onFaviconError(e) {
-			// Hide broken favicon images gracefully
-			e.target.style.display = 'none'
-		},
-
 		formatDate(timestamp) {
 			return new Date(timestamp * 1000).toLocaleDateString(undefined, {
 				year: 'numeric', month: 'short', day: 'numeric',
@@ -224,7 +204,8 @@ export default {
 	height: 18px;
 	flex-shrink: 0;
 	margin-top: 2px;
-	border-radius: 3px;
+	color: var(--color-text-maxcontrast);
+	opacity: 0.7;
 }
 
 .link-list__info {
