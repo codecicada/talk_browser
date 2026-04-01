@@ -37,7 +37,7 @@
 						v-for="item in section.items"
 						:key="item.id"
 						class="overview__media-thumb"
-						@click="openItem(item)"
+						@click="$emit('go-to-tab', section.id)"
 					>
 						<img
 							:src="previewUrl(item)"
@@ -53,7 +53,7 @@
 						v-for="item in section.items"
 						:key="item.id"
 						class="overview__list-item"
-						@click="openItem(item)"
+						@click="$emit('go-to-tab', section.id)"
 					>
 						<span :class="['overview__item-icon', section.icon]" aria-hidden="true" />
 						<span class="overview__item-name">{{ itemName(item) }}</span>
@@ -122,14 +122,6 @@ export default {
 			return new Date(timestamp * 1000).toLocaleDateString(undefined, {
 				year: 'numeric', month: 'short', day: 'numeric',
 			})
-		},
-
-		openItem(item) {
-			const link = item.messageParameters?.file?.link
-				?? item.messageParameters?.object?.link
-			if (link) {
-				window.open(link, '_blank', 'noopener')
-			}
 		},
 	},
 }
