@@ -23,8 +23,16 @@
 				rel="noopener noreferrer"
 				class="link-list__link"
 			>
-				<!-- Link icon -->
-				<svg class="link-list__favicon" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+				<!-- OG image thumbnail (proxied); falls back to link SVG icon -->
+				<img
+					v-if="!ogFailed[item.id]"
+					:src="ogProxyUrl(item.url)"
+					alt=""
+					class="link-list__og-thumb"
+					loading="lazy"
+					@error="onOgError(item.id)"
+				/>
+				<svg v-else class="link-list__link-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
 					<path fill="currentColor" d="M10.59 13.41c.41.39.41 1.03 0 1.42c-.39.41-1.03.41-1.42 0a5.003 5.003 0 0 1 0-7.07l3.54-3.54a5.003 5.003 0 0 1 7.07 0a5.003 5.003 0 0 1 0 7.07l-1.49 1.49c.01-.82-.12-1.64-.4-2.42l.47-.48a2.982 2.982 0 0 0 0-4.24a2.982 2.982 0 0 0-4.24 0l-3.53 3.53a2.982 2.982 0 0 0 0 4.24m2.82-4.24c.39-.41 1.03-.41 1.42 0a5.003 5.003 0 0 1 0 7.07l-3.54 3.54a5.003 5.003 0 0 1-7.07 0a5.003 5.003 0 0 1 0-7.07l1.49-1.49c-.01.82.12 1.64.4 2.43l-.47.47a2.982 2.982 0 0 0 0 4.24a2.982 2.982 0 0 0 4.24 0l3.53-3.53a2.982 2.982 0 0 0 0-4.24a.973.973 0 0 1 0-1.42Z"/>
 				</svg>
 
@@ -43,9 +51,9 @@
 					</span>
 				</div>
 
-					<span class="icon-external link-list__open-icon" aria-hidden="true" />
-				</a>
-			</li>
+				<span class="icon-external link-list__open-icon" aria-hidden="true" />
+			</a>
+		</li>
 		</ul>
 
 		<div v-if="loading" class="link-list__loading" role="status" aria-live="polite">
@@ -74,6 +82,7 @@
 <script>
 import { NcButton, NcEmptyContent, NcLoadingIcon } from '@nextcloud/vue'
 import { translate as t } from '@nextcloud/l10n'
+import { generateUrl } from '@nextcloud/router'
 import { safeUrl } from '../utils/url.js'
 
 export default {
@@ -89,6 +98,13 @@ export default {
 		linkScanDone: { type: Boolean, default: false },
 		search: { type: String, default: '' },
 		highlightId: { type: Number, default: null },
+	},
+
+	data() {
+		return {
+			// Map of item.id → true when the OG image failed/is absent
+			ogFailed: {},
+		}
 	},
 
 	watch: {
@@ -130,6 +146,14 @@ export default {
 	methods: {
 		t,
 		safeUrl,
+
+		ogProxyUrl(url) {
+			return generateUrl('/apps/talk_browser/og-image') + '?url=' + encodeURIComponent(url)
+		},
+
+		onOgError(id) {
+			this.$set(this.ogFailed, id, true)
+		},
 
 		scrollToItem(id) {
 			const safeId = parseInt(id, 10)
@@ -199,9 +223,20 @@ export default {
 	background: var(--color-background-hover);
 }
 
-.link-list__favicon {
-	width: 18px;
-	height: 18px;
+/* OG image thumbnail */
+.link-list__og-thumb {
+	width: 64px;
+	height: 64px;
+	flex-shrink: 0;
+	object-fit: cover;
+	border-radius: 6px;
+	background: var(--color-background-dark);
+}
+
+/* Fallback link SVG icon */
+.link-list__link-icon {
+	width: 20px;
+	height: 20px;
 	flex-shrink: 0;
 	margin-top: 2px;
 	color: var(--color-text-maxcontrast);
@@ -278,3 +313,4 @@ export default {
 	color: var(--color-text-maxcontrast);
 }
 </style>
+

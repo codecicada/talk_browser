@@ -4,6 +4,12 @@ declare(strict_types=1);
 
 return [
     'routes' => [
+        // OG image proxy (must be before the SPA catch-all routes)
+        [
+            'name' => 'og_image#proxy',
+            'url'  => '/og-image',
+            'verb' => 'GET',
+        ],
         // SPA root
         [
             'name' => 'page#index',
