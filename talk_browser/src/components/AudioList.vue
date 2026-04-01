@@ -61,6 +61,9 @@
 
 		<div v-if="loadingMore" class="audio-list__loading-more">
 			<NcLoadingIcon :size="24" />
+			<span class="audio-list__loading-note">
+				{{ t('talk_browser', 'Loading more…') }}
+			</span>
 		</div>
 
 		<div v-if="hasMore && !loading && !loadingMore" class="audio-list__more">
@@ -259,7 +262,19 @@ export default {
 .audio-list__loading-more,
 .audio-list__more {
 	display: flex;
+	flex-direction: column;
+	align-items: center;
+	gap: 8px;
 	justify-content: center;
 	padding: 20px 0;
+}
+
+.audio-list__more {
+	flex-direction: row;
+}
+
+.audio-list__loading-note {
+	font-size: 13px;
+	color: var(--color-text-maxcontrast);
 }
 </style>

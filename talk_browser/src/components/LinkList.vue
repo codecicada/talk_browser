@@ -1,7 +1,7 @@
 <template>
 	<div class="link-list">
 		<NcEmptyContent
-			v-if="!loading && filtered.length === 0 && (linkScanDone || !hasMore)"
+			v-if="!loading && filtered.length === 0"
 			:name="emptyTitle"
 			:description="emptyDescription"
 		>

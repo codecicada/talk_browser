@@ -48,10 +48,6 @@ export function useConversations() {
 		}
 	}
 
-	function selectConversation(token) {
-		selectedToken.value = token
-	}
-
 	return {
 		conversations,
 		loading,
@@ -59,6 +55,5 @@ export function useConversations() {
 		selectedToken,
 		selectedConversation,
 		load,
-		selectConversation,
 	}
 }

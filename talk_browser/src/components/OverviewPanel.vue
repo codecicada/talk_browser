@@ -3,6 +3,16 @@
 		<NcLoadingIcon v-if="loading" :size="40" class="overview__loading" />
 
 		<NcEmptyContent
+			v-else-if="error"
+			:name="t('talk_browser', 'Could not load overview')"
+			:description="error"
+		>
+			<template #icon>
+				<span class="icon-error" />
+			</template>
+		</NcEmptyContent>
+
+		<NcEmptyContent
 			v-else-if="isEmpty"
 			:name="t('talk_browser', 'No shared content yet')"
 			:description="t('talk_browser', 'Share files, images, audio, or locations in this conversation to see them here. Plain links appear in the Links tab.')"
@@ -84,6 +94,10 @@ export default {
 		loading: {
 			type: Boolean,
 			default: false,
+		},
+		error: {
+			type: String,
+			default: null,
 		},
 	},
 

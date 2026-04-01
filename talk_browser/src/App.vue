@@ -58,12 +58,13 @@
 					<template #default="{ activeTab: tab, searchQuery }">
 						<!-- Overview -->
 					<OverviewPanel
-						v-if="tab === 'overview'"
-						:overview-data="overviewData"
-						:loading="overviewLoading"
-						@go-to-tab="activeTab = $event"
-						@go-to-item="goToItem"
-					/>
+					v-if="tab === 'overview'"
+					:overview-data="overviewData"
+					:loading="overviewLoading"
+					:error="overviewError"
+					@go-to-tab="activeTab = $event"
+					@go-to-item="goToItem"
+				/>
 
 						<!-- Item loading error (non-overview tabs) -->
 						<NcEmptyContent
@@ -253,6 +254,7 @@ export default {
 		// ── Overview data (flat object keyed by type) ────────────────────────
 		const overviewData = ref({})
 		const overviewLoading = ref(false)
+		const overviewError = ref(null)
 
 		// ── Shared items (for non-overview tabs) ─────────────────────────────
 		const objectTypeRef = ref('overview')
@@ -274,11 +276,15 @@ export default {
 			activeTab.value = 'overview'
 			highlightId.value = null
 			overviewData.value = {}
+			overviewError.value = null
 			overviewLoading.value = true
 			try {
 				const result = await fetchShareOverview(token)
 				overviewData.value = result
 			} catch (err) {
+				overviewError.value = err?.response?.data?.ocs?.meta?.message
+					?? err?.message
+					?? 'Failed to load overview'
 				overviewData.value = {}
 			} finally {
 				overviewLoading.value = false
@@ -341,6 +347,7 @@ export default {
 			// overview
 			overviewData,
 			overviewLoading,
+			overviewError,
 			// items
 			items,
 			itemsLoading,
