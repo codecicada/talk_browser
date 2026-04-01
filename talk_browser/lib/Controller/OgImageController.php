@@ -11,6 +11,8 @@ use OCP\AppFramework\Http\Attribute\NoAdminRequired;
 use OCP\AppFramework\Http\Attribute\NoCSRFRequired;
 use OCP\AppFramework\Http\DataDisplayResponse;
 use OCP\AppFramework\Http\Response;
+use OCP\Files\IAppData;
+use OCP\Files\AppData\IAppDataFactory;
 use OCP\IRequest;
 
 if (class_exists(__NAMESPACE__ . '\\OgImageController', false)) {
@@ -36,11 +38,15 @@ class OgImageController extends Controller {
     private const FETCH_TIMEOUT = 10;   // seconds
     private const MAX_IMAGE_BYTES = 5 * 1024 * 1024; // 5 MiB
 
+    private IAppData $appData;
+
     public function __construct(
         IRequest $request,
-        private readonly \OCP\Files\IAppData $appData,
+        IAppDataFactory $appDataFactory,
     ) {
         parent::__construct(Application::APP_ID, $request);
+        // Get an app-scoped IAppData instance for talk_browser
+        $this->appData = $appDataFactory->get(Application::APP_ID);
     }
 
     #[NoCSRFRequired]
