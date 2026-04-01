@@ -34,8 +34,9 @@ if (class_exists(__NAMESPACE__ . '\\OgImageController', false)) {
  *   6. Return image bytes with appropriate Content-Type header
  */
 class OgImageController extends Controller {
-    private const CACHE_TTL   = 604800; // 7 days in seconds
-    private const FETCH_TIMEOUT = 10;   // seconds
+    private const CACHE_TTL       = 604800; // 7 days for successful images
+    private const CACHE_TTL_EMPTY = 3600;   // 1 hour for "no OG image found" sentinels
+    private const FETCH_TIMEOUT   = 10;     // seconds
     private const MAX_IMAGE_BYTES = 5 * 1024 * 1024; // 5 MiB
 
     private IAppData $appData;
@@ -111,13 +112,15 @@ class OgImageController extends Controller {
                 return null;
             }
 
-            // Expired?
-            if (time() - ($meta['ts'] ?? 0) > self::CACHE_TTL) {
+            // Expired? Use shorter TTL for empty sentinels so failed URLs get retried sooner
+            $isEmptySentinel = ($meta['mime'] ?? '') === '';
+            $ttl = $isEmptySentinel ? self::CACHE_TTL_EMPTY : self::CACHE_TTL;
+            if (time() - ($meta['ts'] ?? 0) > $ttl) {
                 return null;
             }
 
             // Empty sentinel (OG image not found for this URL)
-            if (($meta['mime'] ?? '') === '') {
+            if ($isEmptySentinel) {
                 return ['data' => '', 'mime' => ''];
             }
 
