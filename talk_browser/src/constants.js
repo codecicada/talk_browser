@@ -66,17 +66,3 @@ export const CONVERSATION_TYPE = {
 	FORMER_ONE_TO_ONE: 5,
 	NOTE_TO_SELF: 6,
 }
-
-/**
- * Return a human-readable label for a conversation type.
- * @param {number} type
- */
-export function conversationTypeLabel(type) {
-	switch (type) {
-	case CONVERSATION_TYPE.ONE_TO_ONE: return 'Direct message'
-	case CONVERSATION_TYPE.GROUP: return 'Group'
-	case CONVERSATION_TYPE.PUBLIC: return 'Public'
-	case CONVERSATION_TYPE.NOTE_TO_SELF: return 'Note to self'
-	default: return 'Conversation'
-	}
-}
