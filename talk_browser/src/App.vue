@@ -62,6 +62,7 @@
 						:overview-data="overviewData"
 						:loading="overviewLoading"
 						@go-to-tab="activeTab = $event"
+						@go-to-item="goToItem"
 					/>
 
 						<!-- Item loading error (non-overview tabs) -->
@@ -88,6 +89,7 @@
 							:loading-more="itemsLoadingMore"
 							:has-more="itemsHasMore"
 							:search="searchQuery"
+							:highlight-id="highlightId"
 							@load-more="loadMoreItems"
 						/>
 
@@ -99,6 +101,7 @@
 							:loading-more="itemsLoadingMore"
 							:has-more="itemsHasMore"
 							:search="searchQuery"
+							:highlight-id="highlightId"
 							@load-more="loadMoreItems"
 						/>
 
@@ -111,6 +114,7 @@
 							:has-more="itemsHasMore"
 							:search="searchQuery"
 							:is-voice="false"
+							:highlight-id="highlightId"
 							@load-more="loadMoreItems"
 						/>
 
@@ -123,6 +127,7 @@
 							:has-more="itemsHasMore"
 							:search="searchQuery"
 							:is-voice="true"
+							:highlight-id="highlightId"
 							@load-more="loadMoreItems"
 						/>
 
@@ -135,6 +140,7 @@
 							:has-more="itemsHasMore"
 							:link-scan-done="linkScanDone"
 							:search="searchQuery"
+							:highlight-id="highlightId"
 							@load-more="loadMoreItems"
 						/>
 
@@ -147,6 +153,7 @@
 							:has-more="itemsHasMore"
 							:search="searchQuery"
 							:object-type="tab"
+							:highlight-id="highlightId"
 							@load-more="loadMoreItems"
 						/>
 					</template>
@@ -240,6 +247,9 @@ export default {
 		// ── Active tab ───────────────────────────────────────────────────────
 		const activeTab = ref('overview')
 
+		// ── Highlighted item (set when navigating from overview to a tab item) ──
+		const highlightId = ref(null)
+
 		// ── Overview data (flat object keyed by type) ────────────────────────
 		const overviewData = ref({})
 		const overviewLoading = ref(false)
@@ -262,6 +272,7 @@ export default {
 		watch(selectedToken, async (token) => {
 			if (!token) return
 			activeTab.value = 'overview'
+			highlightId.value = null
 			overviewData.value = {}
 			overviewLoading.value = true
 			try {
@@ -281,6 +292,15 @@ export default {
 			if (tab === 'overview') return
 			objectTypeRef.value = tab
 		})
+
+		// Navigate from overview to a specific item in its tab
+		function goToItem({ tab, id }) {
+			highlightId.value = id
+			activeTab.value = tab
+			if (tab !== 'overview') {
+				objectTypeRef.value = tab
+			}
+		}
 
 		// ── Sync state → URL path ────────────────────────────────────────────
 		watch([selectedToken, activeTab], ([token, tab]) => {
@@ -316,6 +336,8 @@ export default {
 			loadConversations,
 			// tabs
 			activeTab,
+			highlightId,
+			goToItem,
 			// overview
 			overviewData,
 			overviewLoading,

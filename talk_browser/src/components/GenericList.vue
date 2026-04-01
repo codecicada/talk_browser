@@ -14,6 +14,7 @@
 			<li
 				v-for="item in filtered"
 				:key="item.id"
+				:data-id="item.id"
 				class="generic-list__item"
 				@click="openItem(item)"
 			>
@@ -78,6 +79,20 @@ export default {
 		hasMore: { type: Boolean, default: false },
 		search: { type: String, default: '' },
 		objectType: { type: String, default: 'other' },
+		highlightId: { type: Number, default: null },
+	},
+
+	watch: {
+		highlightId(id) {
+			if (!id) return
+			this.$nextTick(() => this.scrollToItem(id))
+		},
+	},
+
+	mounted() {
+		if (this.highlightId) {
+			this.$nextTick(() => this.scrollToItem(this.highlightId))
+		}
 	},
 
 	computed: {
@@ -144,6 +159,14 @@ export default {
 			return new Date(timestamp * 1000).toLocaleDateString(undefined, {
 				year: 'numeric', month: 'short', day: 'numeric',
 			})
+		},
+
+		scrollToItem(id) {
+			const el = this.$el.querySelector(`[data-id="${id}"]`)
+			if (!el) return
+			el.scrollIntoView({ behavior: 'smooth', block: 'center' })
+			el.classList.add('generic-list__item--highlight')
+			setTimeout(() => el.classList.remove('generic-list__item--highlight'), 2000)
 		},
 
 		mapUrl(item) {
@@ -233,6 +256,16 @@ export default {
 	font-size: 12px;
 	color: var(--color-primary-element);
 	margin-top: 2px;
+}
+
+.generic-list__item--highlight {
+	outline: 2px solid var(--color-primary-element);
+	animation: tb-highlight-fade 2s ease forwards;
+}
+
+@keyframes tb-highlight-fade {
+	0%   { outline-color: var(--color-primary-element); }
+	100% { outline-color: transparent; }
 }
 
 .generic-list__loading,

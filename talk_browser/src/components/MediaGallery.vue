@@ -14,6 +14,7 @@
 			<div
 				v-for="item in filtered"
 				:key="item.id"
+				:data-id="item.id"
 				class="media-gallery__item"
 				:title="item.messageParameters?.file?.name ?? ''"
 				@click="openLightbox(item)"
@@ -107,6 +108,20 @@ export default {
 		loadingMore: { type: Boolean, default: false },
 		hasMore: { type: Boolean, default: false },
 		search: { type: String, default: '' },
+		highlightId: { type: Number, default: null },
+	},
+
+	watch: {
+		highlightId(id) {
+			if (!id) return
+			this.$nextTick(() => this.scrollToItem(id))
+		},
+	},
+
+	mounted() {
+		if (this.highlightId) {
+			this.$nextTick(() => this.scrollToItem(this.highlightId))
+		}
 	},
 
 	data() {
@@ -176,6 +191,14 @@ export default {
 			return new Date(timestamp * 1000).toLocaleDateString(undefined, {
 				year: 'numeric', month: 'short', day: 'numeric',
 			})
+		},
+
+		scrollToItem(id) {
+			const el = this.$el.querySelector(`[data-id="${id}"]`)
+			if (!el) return
+			el.scrollIntoView({ behavior: 'smooth', block: 'center' })
+			el.classList.add('media-gallery__item--highlight')
+			setTimeout(() => el.classList.remove('media-gallery__item--highlight'), 2000)
 		},
 
 		openLightbox(item) {
@@ -274,6 +297,16 @@ export default {
 	display: block;
 	font-size: 11px;
 	color: var(--color-text-maxcontrast);
+}
+
+.media-gallery__item--highlight {
+	outline: 2px solid var(--color-primary-element);
+	animation: tb-highlight-fade 2s ease forwards;
+}
+
+@keyframes tb-highlight-fade {
+	0%   { outline-color: var(--color-primary-element); }
+	100% { outline-color: transparent; }
 }
 
 .media-gallery__loading,

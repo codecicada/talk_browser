@@ -14,6 +14,7 @@
 			<li
 				v-for="item in filtered"
 				:key="item.id"
+				:data-id="item.id"
 				class="audio-list__item"
 			>
 				<!-- Inline HTML5 audio player -->
@@ -88,6 +89,20 @@ export default {
 		search: { type: String, default: '' },
 		// true = voice notes (voice type), false = audio files (audio type)
 		isVoice: { type: Boolean, default: false },
+		highlightId: { type: Number, default: null },
+	},
+
+	watch: {
+		highlightId(id) {
+			if (!id) return
+			this.$nextTick(() => this.scrollToItem(id))
+		},
+	},
+
+	mounted() {
+		if (this.highlightId) {
+			this.$nextTick(() => this.scrollToItem(this.highlightId))
+		}
 	},
 
 	data() {
@@ -127,6 +142,14 @@ export default {
 
 	methods: {
 		t,
+
+		scrollToItem(id) {
+			const el = this.$el.querySelector(`[data-id="${id}"]`)
+			if (!el) return
+			el.scrollIntoView({ behavior: 'smooth', block: 'center' })
+			el.classList.add('audio-list__item--highlight')
+			setTimeout(() => el.classList.remove('audio-list__item--highlight'), 2000)
+		},
 
 		markBroken(id) {
 			this.$set(this.brokenSrc, id, true)
@@ -186,6 +209,16 @@ export default {
 	color: var(--color-text-maxcontrast);
 	opacity: 0.7;
 	min-width: 200px;
+}
+
+.audio-list__item--highlight {
+	outline: 2px solid var(--color-primary-element);
+	animation: tb-highlight-fade 2s ease forwards;
+}
+
+@keyframes tb-highlight-fade {
+	0%   { outline-color: var(--color-primary-element); }
+	100% { outline-color: transparent; }
 }
 
 .audio-list__player-wrap {

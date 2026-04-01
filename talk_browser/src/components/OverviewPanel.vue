@@ -31,13 +31,13 @@
 					</button>
 				</div>
 
-				<!-- Media: grid thumbnails -->
+					<!-- Media: grid thumbnails -->
 				<div v-if="section.id === 'media'" class="overview__media-row">
 					<div
 						v-for="item in section.items"
 						:key="item.id"
 						class="overview__media-thumb"
-						@click="$emit('go-to-tab', section.id)"
+						@click="$emit('go-to-item', { tab: section.id, id: item.id })"
 					>
 						<img
 							:src="previewUrl(item)"
@@ -53,7 +53,7 @@
 						v-for="item in section.items"
 						:key="item.id"
 						class="overview__list-item"
-						@click="$emit('go-to-tab', section.id)"
+						@click="$emit('go-to-item', { tab: section.id, id: item.id })"
 					>
 						<span :class="['overview__item-icon', section.icon]" aria-hidden="true" />
 						<span class="overview__item-name">{{ itemName(item) }}</span>
