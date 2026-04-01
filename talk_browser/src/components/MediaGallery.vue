@@ -16,18 +16,19 @@
 				:key="item.id"
 				class="media-gallery__item"
 				:title="item.messageParameters?.file?.name ?? ''"
-				@click="openItem(item)"
+				@click="openLightbox(item)"
 			>
-		<!-- Thumbnail — works for both images and videos via Nextcloud preview API -->
-			<div class="media-gallery__thumb-wrap">
-				<img
-					:src="previewUrl(item)"
-					:alt="item.messageParameters?.file?.name ?? ''"
-					class="media-gallery__thumb"
-					loading="lazy"
-				/>
-				<span v-if="!isImage(item)" class="media-gallery__play-icon icon-play" aria-hidden="true" />
-			</div>
+				<!-- Thumbnail — works for both images and videos via Nextcloud preview API -->
+				<div class="media-gallery__thumb-wrap">
+					<img
+						:src="previewUrl(item)"
+						:alt="item.messageParameters?.file?.name ?? ''"
+						class="media-gallery__thumb"
+						loading="lazy"
+						@error="onThumbError"
+					/>
+					<span v-if="!isImage(item)" class="media-gallery__play-icon icon-play" aria-hidden="true" />
+				</div>
 
 				<div class="media-gallery__meta">
 					<span class="media-gallery__name">{{ fileName(item) }}</span>
@@ -49,18 +50,56 @@
 				{{ t('talk_browser', 'Load more') }}
 			</NcButton>
 		</div>
+
+		<!-- Lightbox modal -->
+		<NcModal
+			v-if="lightboxItem"
+			:name="fileName(lightboxItem)"
+			size="large"
+			@close="lightboxItem = null"
+		>
+			<div class="media-gallery__lightbox">
+				<img
+					v-if="isImage(lightboxItem)"
+					:src="fullUrl(lightboxItem)"
+					:alt="fileName(lightboxItem)"
+					class="media-gallery__lightbox-img"
+					@error="onFullError"
+				/>
+				<video
+					v-else
+					:src="fullUrl(lightboxItem)"
+					controls
+					autoplay
+					class="media-gallery__lightbox-video"
+				/>
+				<div class="media-gallery__lightbox-meta">
+					<span class="media-gallery__lightbox-name">{{ fileName(lightboxItem) }}</span>
+					<span class="media-gallery__lightbox-date">{{ formatDate(lightboxItem.timestamp) }}</span>
+					<a
+						:href="lightboxItem.messageParameters?.file?.link"
+						target="_blank"
+						rel="noopener noreferrer"
+						class="media-gallery__lightbox-open"
+					>
+						{{ t('talk_browser', 'Open in Files') }}
+						<span class="icon-external" aria-hidden="true" />
+					</a>
+				</div>
+			</div>
+		</NcModal>
 	</div>
 </template>
 
 <script>
-import { NcButton, NcEmptyContent, NcLoadingIcon } from '@nextcloud/vue'
+import { NcButton, NcEmptyContent, NcLoadingIcon, NcModal } from '@nextcloud/vue'
 import { getRootUrl } from '@nextcloud/router'
 import { translate as t } from '@nextcloud/l10n'
 
 export default {
 	name: 'MediaGallery',
 
-	components: { NcButton, NcEmptyContent, NcLoadingIcon },
+	components: { NcButton, NcEmptyContent, NcLoadingIcon, NcModal },
 
 	props: {
 		items: { type: Array, default: () => [] },
@@ -68,6 +107,12 @@ export default {
 		loadingMore: { type: Boolean, default: false },
 		hasMore: { type: Boolean, default: false },
 		search: { type: String, default: '' },
+	},
+
+	data() {
+		return {
+			lightboxItem: null,
+		}
 	},
 
 	computed: {
@@ -109,8 +154,17 @@ export default {
 		previewUrl(item) {
 			const fileId = item.messageParameters?.file?.id
 			if (!fileId) return ''
-			// Use getRootUrl() to avoid the /index.php/ prefix added by generateUrl()
 			return `${getRootUrl()}/index.php/core/preview?fileId=${fileId}&x=200&y=200&a=true`
+		},
+
+		fullUrl(item) {
+			const fileId = item.messageParameters?.file?.id
+			if (!fileId) return ''
+			// Use a large preview for images; for video fall back to the Files link
+			if (this.isImage(item)) {
+				return `${getRootUrl()}/index.php/core/preview?fileId=${fileId}&x=2048&y=2048&a=true`
+			}
+			return item.messageParameters?.file?.link ?? ''
 		},
 
 		formatDate(timestamp) {
@@ -119,12 +173,18 @@ export default {
 			})
 		},
 
-		openItem(item) {
-			const link = item.messageParameters?.file?.link
-				?? item.messageParameters?.object?.link
-			if (link) {
-				window.open(link, '_blank', 'noopener')
-			}
+		openLightbox(item) {
+			this.lightboxItem = item
+		},
+
+		onThumbError(e) {
+			e.target.style.display = 'none'
+			const wrap = e.target.closest('.media-gallery__thumb-wrap')
+			if (wrap) wrap.classList.add('media-gallery__thumb-wrap--error')
+		},
+
+		onFullError(e) {
+			e.target.style.display = 'none'
 		},
 	},
 }
@@ -135,6 +195,22 @@ export default {
 	position: relative;
 	width: 100%;
 	height: 130px;
+	background: var(--color-background-darker);
+}
+
+.media-gallery__thumb-wrap--error::after {
+	content: '';
+	display: block;
+	width: 32px;
+	height: 32px;
+	position: absolute;
+	top: 50%;
+	left: 50%;
+	transform: translate(-50%, -50%);
+	opacity: 0.3;
+	background-image: var(--icon-picture-dark);
+	background-size: contain;
+	background-repeat: no-repeat;
 }
 
 .media-gallery__play-icon {
@@ -176,17 +252,6 @@ export default {
 	display: block;
 }
 
-.media-gallery__video-thumb {
-	width: 100%;
-	height: 130px;
-	display: flex;
-	align-items: center;
-	justify-content: center;
-	background: var(--color-background-darker);
-	font-size: 40px;
-	opacity: 0.5;
-}
-
 .media-gallery__meta {
 	padding: 6px 8px;
 }
@@ -212,5 +277,45 @@ export default {
 	display: flex;
 	justify-content: center;
 	padding: 20px 0;
+}
+
+/* Lightbox */
+.media-gallery__lightbox {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	gap: 12px;
+	padding: 16px;
+	max-height: 80vh;
+}
+
+.media-gallery__lightbox-img,
+.media-gallery__lightbox-video {
+	max-width: 100%;
+	max-height: calc(80vh - 80px);
+	border-radius: 6px;
+	object-fit: contain;
+}
+
+.media-gallery__lightbox-meta {
+	display: flex;
+	align-items: center;
+	gap: 12px;
+	font-size: 13px;
+	color: var(--color-text-maxcontrast);
+	flex-wrap: wrap;
+	justify-content: center;
+}
+
+.media-gallery__lightbox-name {
+	font-weight: 500;
+	color: var(--color-main-text);
+}
+
+.media-gallery__lightbox-open {
+	display: inline-flex;
+	align-items: center;
+	gap: 4px;
+	color: var(--color-primary-element);
 }
 </style>
