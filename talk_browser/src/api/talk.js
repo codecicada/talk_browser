@@ -86,14 +86,16 @@ export async function fetchSharedItems(token, objectType, lastKnownMessageId = n
 		{ headers: OCS_HEADERS, params: { objectType, ...params } },
 	)
 
-	const nextCursor = response.headers['x-chat-last-given']
-		? parseInt(response.headers['x-chat-last-given'], 10)
-		: null
-
 	// The Talk share API returns an object keyed by message ID (ascending).
 	// Reverse so newest items come first.
 	const raw = response.data.ocs.data
 	const items = Array.isArray(raw) ? raw.slice().reverse() : Object.values(raw).reverse()
+
+	// If the API returned fewer items than requested, we've reached the end —
+	// no need to set a cursor even if the header is present.
+	const nextCursor = items.length >= limit && response.headers['x-chat-last-given']
+		? parseInt(response.headers['x-chat-last-given'], 10)
+		: null
 
 	return {
 		items,
@@ -136,12 +138,16 @@ export async function fetchMessages(token, lastKnownMessageId = null, limit = 20
 		throw error
 	}
 
-	const nextCursor = response.headers['x-chat-last-given']
+	const messages = response.data.ocs.data
+
+	// If fewer messages than the limit were returned, we've reached the beginning
+	// of history — treat as done regardless of the cursor header.
+	const nextCursor = messages.length >= limit && response.headers['x-chat-last-given']
 		? parseInt(response.headers['x-chat-last-given'], 10)
 		: null
 
 	return {
-		messages: response.data.ocs.data,
+		messages,
 		lastKnownMessageId: nextCursor,
 		done: nextCursor === null,
 	}
