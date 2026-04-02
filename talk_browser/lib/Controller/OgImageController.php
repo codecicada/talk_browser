@@ -178,7 +178,8 @@ class OgImageController extends Controller {
                 'method'          => 'GET',
                 'header'          => implode("\r\n", [
                     'Accept: ' . $accept,
-                    'User-Agent: Mozilla/5.0 (compatible; NextcloudTalkBrowser/1.0)',
+                    'Accept-Language: en-US,en;q=0.5',
+                    'User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:128.0) Gecko/20100101 Firefox/128.0',
                 ]),
                 'timeout'         => self::FETCH_TIMEOUT,
                 'follow_location' => 1,

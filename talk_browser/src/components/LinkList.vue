@@ -38,11 +38,15 @@
 
 				<div class="link-list__info">
 					<span class="link-list__title">
-						{{ displayTitle(item) }}
+						{{ resolvedTitle(item) }}
 						<span v-if="item.count > 1" class="link-list__count" :title="t('talk_browser', '{count} times shared', { count: item.count })">
 							&times;{{ item.count }}
 						</span>
 					</span>
+					<span
+						v-if="resolvedDescription(item)"
+						class="link-list__description"
+					>{{ resolvedDescription(item) }}</span>
 					<span class="link-list__url">{{ item.url }}</span>
 					<span class="link-list__meta">
 						{{ item.actorDisplayName }}
@@ -84,6 +88,7 @@ import { NcButton, NcEmptyContent, NcLoadingIcon } from '@nextcloud/vue'
 import { translate as t } from '@nextcloud/l10n'
 import { generateUrl } from '@nextcloud/router'
 import { safeUrl } from '../utils/url.js'
+import { fetchOgMeta } from '../api/talk.js'
 
 export default {
 	name: 'LinkList',
@@ -104,6 +109,10 @@ export default {
 		return {
 			// Map of item.id → true when the OG image failed/is absent
 			ogFailed: {},
+			// Map of item.url → { title: string|null, description: string|null }
+			ogMeta: {},
+			// Set of URLs currently being fetched (avoid duplicate in-flight requests)
+			ogMetaFetching: new Set(),
 		}
 	},
 
@@ -112,12 +121,17 @@ export default {
 			if (!id) return
 			this.$nextTick(() => this.scrollToItem(id))
 		},
+
+		filtered(newItems) {
+			this.prefetchOgMeta(newItems)
+		},
 	},
 
 	mounted() {
 		if (this.highlightId) {
 			this.$nextTick(() => this.scrollToItem(this.highlightId))
 		}
+		this.prefetchOgMeta(this.filtered)
 	},
 
 	computed: {
@@ -126,7 +140,8 @@ export default {
 			const q = this.search.toLowerCase()
 			return this.items.filter(item =>
 				item.url.toLowerCase().includes(q)
-				|| this.displayTitle(item).toLowerCase().includes(q),
+				|| this.resolvedTitle(item).toLowerCase().includes(q)
+				|| (this.resolvedDescription(item) || '').toLowerCase().includes(q),
 			)
 		},
 
@@ -155,6 +170,44 @@ export default {
 			this.$set(this.ogFailed, id, true)
 		},
 
+		/**
+		 * Kick off OG meta fetches for all visible items that haven't been
+		 * fetched yet. Requests are deduplicated by URL.
+		 */
+		prefetchOgMeta(items) {
+			for (const item of items) {
+				if (this.ogMeta[item.url] !== undefined) continue
+				if (this.ogMetaFetching.has(item.url)) continue
+				this.ogMetaFetching.add(item.url)
+				fetchOgMeta(item.url)
+					.then(meta => {
+						this.$set(this.ogMeta, item.url, meta)
+					})
+					.catch(() => {
+						this.$set(this.ogMeta, item.url, { title: null, description: null })
+					})
+					.finally(() => {
+						this.ogMetaFetching.delete(item.url)
+					})
+			}
+		},
+
+		/**
+		 * Best available title: OG title > message-text title > bare URL.
+		 */
+		resolvedTitle(item) {
+			const og = this.ogMeta[item.url]
+			if (og?.title) return og.title
+			return item.title && item.title !== item.url ? item.title : item.url
+		},
+
+		/**
+		 * OG description if available (null otherwise — caller must guard).
+		 */
+		resolvedDescription(item) {
+			return this.ogMeta[item.url]?.description ?? null
+		},
+
 		scrollToItem(id) {
 			const safeId = parseInt(id, 10)
 			if (!Number.isFinite(safeId)) return
@@ -163,11 +216,6 @@ export default {
 			el.scrollIntoView({ behavior: 'smooth', block: 'center' })
 			el.classList.add('link-list__item--highlight')
 			setTimeout(() => el.classList.remove('link-list__item--highlight'), 2000)
-		},
-
-		displayTitle(item) {
-			// Use message text as title if it's more than just the bare URL
-			return item.title && item.title !== item.url ? item.title : item.url
 		},
 
 		formatDate(timestamp) {
@@ -269,6 +317,17 @@ export default {
 	vertical-align: middle;
 }
 
+.link-list__description {
+	font-size: 12px;
+	color: var(--color-text-maxcontrast);
+	margin-top: 2px;
+	/* Allow up to 2 lines before truncating */
+	display: -webkit-box;
+	-webkit-line-clamp: 2;
+	-webkit-box-orient: vertical;
+	overflow: hidden;
+}
+
 .link-list__url {
 	display: block;
 	font-size: 12px;
@@ -276,6 +335,7 @@ export default {
 	white-space: nowrap;
 	overflow: hidden;
 	text-overflow: ellipsis;
+	margin-top: 2px;
 }
 
 .link-list__meta {
@@ -313,4 +373,3 @@ export default {
 	color: var(--color-text-maxcontrast);
 }
 </style>
-

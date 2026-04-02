@@ -7,7 +7,7 @@
  */
 
 import axios from '@nextcloud/axios'
-import { getRootUrl } from '@nextcloud/router'
+import { getRootUrl, generateUrl } from '@nextcloud/router'
 
 const OCS_BASE = '/ocs/v2.php/apps/spreed/api'
 
@@ -164,4 +164,21 @@ export function extractUrls(text) {
 	// (e.g. "see https://example.com." or "visit https://example.com)")
 	const cleaned = matches.map(u => u.replace(/[.,;:!?)'">]+$/, ''))
 	return [...new Set(cleaned)]
+}
+
+// ─── OpenGraph metadata ───────────────────────────────────────────────────────
+
+/**
+ * Fetch OpenGraph title + description for a URL via the server-side proxy.
+ * Returns { title: string|null, description: string|null }.
+ *
+ * The proxy handles caching and CSP constraints.
+ *
+ * @param {string} url
+ * @returns {Promise<{title: string|null, description: string|null}>}
+ */
+export async function fetchOgMeta(url) {
+	const endpoint = generateUrl('/apps/talk_browser/api/og-meta') + '?url=' + encodeURIComponent(url)
+	const response = await axios.get(endpoint)
+	return response.data
 }

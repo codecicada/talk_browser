@@ -16,6 +16,12 @@ return [
             'url'          => '/api/og-image',
             'verb'         => 'GET',
         ],
+        // OG metadata proxy (title + description) — JSON response
+        [
+            'name'         => 'og_meta#proxy',
+            'url'          => '/api/og-meta',
+            'verb'         => 'GET',
+        ],
         // SPA root
         [
             'name' => 'page#index',
