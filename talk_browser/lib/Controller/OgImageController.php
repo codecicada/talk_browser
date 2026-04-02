@@ -168,18 +168,36 @@ class OgImageController extends Controller {
     // HTTP fetch helpers
     // -------------------------------------------------------------------------
 
+    private const TWITTER_HOSTS = ['x.com', 'www.x.com', 'twitter.com', 'www.twitter.com'];
+
     /**
      * Fetch a URL and return its body, or null on failure.
      * Accepts an optional Accept header value.
+     *
+     * X.com/Twitter are JS SPAs with no server-rendered OG tags. We rewrite
+     * those URLs to fxtwitter.com (which serves OG-enriched embeds) and use
+     * a bot UA so fxtwitter doesn't redirect us back to the SPA.
      */
     private function fetchUrl(string $url, string $accept = '*/*'): ?string {
+        $parsed    = parse_url($url);
+        $host      = strtolower($parsed['host'] ?? '');
+        $isTwitter = in_array($host, self::TWITTER_HOSTS, true);
+
+        $fetchUrl  = $isTwitter
+            ? preg_replace('#^(https?://)(?:www\.)?(x|twitter)\.com#i', '$1fxtwitter.com', $url)
+            : $url;
+
+        $userAgent = $isTwitter
+            ? 'Mozilla/5.0 (compatible; TalkBrowserBot/1.0)'
+            : 'Mozilla/5.0 (X11; Linux x86_64; rv:128.0) Gecko/20100101 Firefox/128.0';
+
         $ctx = stream_context_create([
             'http' => [
                 'method'          => 'GET',
                 'header'          => implode("\r\n", [
                     'Accept: ' . $accept,
                     'Accept-Language: en-US,en;q=0.5',
-                    'User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:128.0) Gecko/20100101 Firefox/128.0',
+                    'User-Agent: ' . $userAgent,
                 ]),
                 'timeout'         => self::FETCH_TIMEOUT,
                 'follow_location' => 1,
@@ -191,7 +209,7 @@ class OgImageController extends Controller {
             ],
         ]);
 
-        $body = @file_get_contents($url, false, $ctx);
+        $body = @file_get_contents($fetchUrl, false, $ctx);
         if ($body === false || $body === '') {
             return null;
         }

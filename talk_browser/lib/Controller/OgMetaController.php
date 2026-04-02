@@ -148,14 +148,36 @@ class OgMetaController extends Controller {
     // HTTP fetch helper
     // -------------------------------------------------------------------------
 
+    /**
+     * X.com (Twitter) is a JavaScript SPA that serves no OG tags to crawlers.
+     * fxtwitter.com is a well-known open-source proxy that re-serves tweets with
+     * proper OG meta tags — but only when accessed with a non-browser User-Agent.
+     * We rewrite x.com / twitter.com fetch URLs to fxtwitter.com and use a plain
+     * bot UA so fxtwitter returns its server-rendered embed page instead of
+     * redirecting back to the SPA.
+     */
+    private const TWITTER_HOSTS = ['x.com', 'www.x.com', 'twitter.com', 'www.twitter.com'];
+
     private function fetchUrl(string $url): ?string {
+        $parsed    = parse_url($url);
+        $host      = strtolower($parsed['host'] ?? '');
+        $isTwitter = in_array($host, self::TWITTER_HOSTS, true);
+
+        $fetchUrl  = $isTwitter
+            ? preg_replace('#^(https?://)(?:www\.)?(x|twitter)\.com#i', '$1fxtwitter.com', $url)
+            : $url;
+
+        $userAgent = $isTwitter
+            ? 'Mozilla/5.0 (compatible; TalkBrowserBot/1.0)'  // fxtwitter needs a non-browser UA
+            : 'Mozilla/5.0 (X11; Linux x86_64; rv:128.0) Gecko/20100101 Firefox/128.0';
+
         $ctx = stream_context_create([
             'http' => [
                 'method'          => 'GET',
                 'header'          => implode("\r\n", [
                     'Accept: text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
                     'Accept-Language: en-US,en;q=0.5',
-                    'User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:128.0) Gecko/20100101 Firefox/128.0',
+                    'User-Agent: ' . $userAgent,
                 ]),
                 'timeout'         => self::FETCH_TIMEOUT,
                 'follow_location' => 1,
@@ -167,7 +189,7 @@ class OgMetaController extends Controller {
             ],
         ]);
 
-        $body = @file_get_contents($url, false, $ctx);
+        $body = @file_get_contents($fetchUrl, false, $ctx);
         if ($body === false || $body === '') {
             return null;
         }
