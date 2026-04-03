@@ -16,7 +16,7 @@ Talk Content Browser adds a dedicated page to Nextcloud where you can explore th
 
 **Requirements:** Nextcloud Talk (spreed) must be installed and enabled.
     ]]></description>
-    <version>1.0.1</version>
+    <version>1.0.2</version>
     <licence>AGPL-3.0-or-later</licence>
     <author mail="contact@codecicada.com" homepage="https://github.com/codecicada">Code Cicada</author>
     <bugs>https://github.com/codecicada/talk_browser/issues</bugs>

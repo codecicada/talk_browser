@@ -74,6 +74,7 @@
 import { NcButton, NcEmptyContent, NcLoadingIcon } from '@nextcloud/vue'
 import { translate as t } from '@nextcloud/l10n'
 import { safeUrl } from '../utils/url.js'
+import { sortItems } from '../utils/sort.js'
 
 export default {
 	name: 'GenericList',
@@ -86,6 +87,7 @@ export default {
 		loadingMore: { type: Boolean, default: false },
 		hasMore: { type: Boolean, default: false },
 		search: { type: String, default: '' },
+		sort: { type: String, default: 'date-desc' },
 		objectType: { type: String, default: 'other' },
 		highlightId: { type: Number, default: null },
 	},
@@ -105,12 +107,15 @@ export default {
 
 	computed: {
 		filtered() {
-			if (!this.search) return this.items
-			const q = this.search.toLowerCase()
-			return this.items.filter(item =>
-				this.itemName(item).toLowerCase().includes(q)
-				|| (item.actorDisplayName ?? '').toLowerCase().includes(q),
-			)
+			let result = this.items
+			if (this.search) {
+				const q = this.search.toLowerCase()
+				result = result.filter(item =>
+					this.itemName(item).toLowerCase().includes(q)
+					|| (item.actorDisplayName ?? '').toLowerCase().includes(q),
+				)
+			}
+			return sortItems(result, this.sort, item => this.itemName(item))
 		},
 
 		emptyIcon() {

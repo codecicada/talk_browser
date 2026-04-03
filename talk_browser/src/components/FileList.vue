@@ -71,6 +71,7 @@
 import { NcButton, NcEmptyContent, NcLoadingIcon } from '@nextcloud/vue'
 import { translate as t } from '@nextcloud/l10n'
 import { safeUrl } from '../utils/url.js'
+import { sortItems } from '../utils/sort.js'
 
 export default {
 	name: 'FileList',
@@ -83,6 +84,7 @@ export default {
 		loadingMore: { type: Boolean, default: false },
 		hasMore: { type: Boolean, default: false },
 		search: { type: String, default: '' },
+		sort: { type: String, default: 'date-desc' },
 		highlightId: { type: Number, default: null },
 	},
 
@@ -101,11 +103,14 @@ export default {
 
 	computed: {
 		filtered() {
-			if (!this.search) return this.items
-			const q = this.search.toLowerCase()
-			return this.items.filter(item =>
-				this.fileName(item).toLowerCase().includes(q),
-			)
+			let result = this.items
+			if (this.search) {
+				const q = this.search.toLowerCase()
+				result = result.filter(item =>
+					this.fileName(item).toLowerCase().includes(q),
+				)
+			}
+			return sortItems(result, this.sort, item => this.fileName(item))
 		},
 
 		emptyTitle() {

@@ -62,46 +62,31 @@
 
 		<div v-if="loading" class="link-list__loading" role="status" aria-live="polite">
 			<NcLoadingIcon :size="32" aria-hidden="true" />
-			<span v-if="!linkScanDone" class="link-list__scan-note">
+			<span class="link-list__scan-note">
 				{{ t('talk_browser', 'Scanning message history for links…') }}
 			</span>
-			<span v-else class="sr-only">{{ t('talk_browser', 'Loading…') }}</span>
-		</div>
-
-		<div v-if="loadingMore" class="link-list__loading-more" role="status" aria-live="polite">
-			<NcLoadingIcon :size="24" aria-hidden="true" />
-			<span class="link-list__scan-note">
-				{{ t('talk_browser', 'Scanning more history…') }}
-			</span>
-		</div>
-
-		<div v-if="hasMore && !loading && !loadingMore" class="link-list__more">
-			<NcButton @click="$emit('load-more')">
-				{{ t('talk_browser', 'Scan more history') }}
-			</NcButton>
 		</div>
 	</div>
 </template>
 
 <script>
-import { NcButton, NcEmptyContent, NcLoadingIcon } from '@nextcloud/vue'
+import { NcEmptyContent, NcLoadingIcon } from '@nextcloud/vue'
 import { translate as t } from '@nextcloud/l10n'
 import { generateUrl } from '@nextcloud/router'
 import { safeUrl } from '../utils/url.js'
 import { fetchOgMeta } from '../api/talk.js'
+import { sortItems } from '../utils/sort.js'
 
 export default {
 	name: 'LinkList',
 
-	components: { NcButton, NcEmptyContent, NcLoadingIcon },
+	components: { NcEmptyContent, NcLoadingIcon },
 
 	props: {
 		items: { type: Array, default: () => [] },
 		loading: { type: Boolean, default: false },
-		loadingMore: { type: Boolean, default: false },
-		hasMore: { type: Boolean, default: false },
-		linkScanDone: { type: Boolean, default: false },
 		search: { type: String, default: '' },
+		sort: { type: String, default: 'date-desc' },
 		highlightId: { type: Number, default: null },
 	},
 
@@ -136,13 +121,16 @@ export default {
 
 	computed: {
 		filtered() {
-			if (!this.search) return this.items
-			const q = this.search.toLowerCase()
-			return this.items.filter(item =>
-				item.url.toLowerCase().includes(q)
-				|| this.resolvedTitle(item).toLowerCase().includes(q)
-				|| (this.resolvedDescription(item) || '').toLowerCase().includes(q),
-			)
+			let result = this.items
+			if (this.search) {
+				const q = this.search.toLowerCase()
+				result = result.filter(item =>
+					item.url.toLowerCase().includes(q)
+					|| this.resolvedTitle(item).toLowerCase().includes(q)
+					|| (this.resolvedDescription(item) || '').toLowerCase().includes(q),
+				)
+			}
+			return sortItems(result, this.sort, item => this.resolvedTitle(item))
 		},
 
 		emptyTitle() {
@@ -353,19 +341,12 @@ export default {
 	margin-top: 4px;
 }
 
-.link-list__loading,
-.link-list__loading-more,
-.link-list__more {
+.link-list__loading {
 	display: flex;
 	flex-direction: column;
 	align-items: center;
 	gap: 8px;
 	padding: 20px 0;
-}
-
-.link-list__more {
-	flex-direction: row;
-	justify-content: center;
 }
 
 .link-list__scan-note {

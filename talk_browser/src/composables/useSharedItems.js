@@ -1,36 +1,42 @@
 /**
- * useSharedItems — composable for loading shared items of a given type,
- * with pagination and search support.
+ * useSharedItems — composable for loading shared items of a single type.
+ *
+ * One instance is created per tab and kept alive for the session, so switching
+ * tabs never re-fetches data that has already been loaded.
+ *
+ * @param {import('vue').Ref<string>} tokenRef      - reactive conversation token
+ * @param {string}                    objectType     - tab type (media | file | audio | …)
  */
 
-import { ref, watch } from 'vue'
+import { ref } from 'vue'
 import { fetchSharedItems, fetchMessages, extractUrls } from '../api/talk.js'
 
-export function useSharedItems(tokenRef, objectTypeRef) {
+export function useSharedItems(tokenRef, objectType) {
 	const items = ref([])
 	const loading = ref(false)
 	const loadingMore = ref(false)
 	const error = ref(null)
 	const hasMore = ref(false)
 	const cursor = ref(null)
+	// True once a load attempt has completed (success or empty) — prevents
+	// re-fetching tabs that genuinely have no data.
+	const loaded = ref(false)
 
-	// For link extraction: track if we've scanned the full history
-	const linkScanDone = ref(false)
-	// Map<url, item> — source of truth for deduplication across pages
+	// For link extraction
 	const linkMap = ref(new Map())
 
 	async function load() {
 		const token = tokenRef.value
-		const objectType = objectTypeRef.value
-		// 'overview' is handled separately in App.vue via fetchShareOverview; skip here.
 		if (!token || !objectType || objectType === 'overview') return
+
+		// Already loaded or currently loading — don't reload
+		if (loading.value || loaded.value) return
 
 		loading.value = true
 		error.value = null
 		items.value = []
 		cursor.value = null
 		hasMore.value = false
-		linkScanDone.value = false
 		linkMap.value = new Map()
 
 		try {
@@ -52,24 +58,20 @@ export function useSharedItems(tokenRef, objectTypeRef) {
 				?? 'Failed to load items'
 		} finally {
 			loading.value = false
+			loaded.value = true
 		}
 	}
 
 	async function loadMore() {
 		const token = tokenRef.value
-		const objectType = objectTypeRef.value
-		if (!token || !objectType || !hasMore.value || loadingMore.value) return
+		if (!token || !hasMore.value || loadingMore.value) return
 
 		loadingMore.value = true
 		try {
-			if (objectType === 'links') {
-				await loadLinksPage(token)
-			} else {
-				const result = await fetchSharedItems(token, objectType, cursor.value)
-				items.value = [...items.value, ...result.items]
-				cursor.value = result.lastKnownMessageId
-				hasMore.value = cursor.value !== null
-			}
+			const result = await fetchSharedItems(token, objectType, cursor.value)
+			items.value = [...items.value, ...result.items]
+			cursor.value = result.lastKnownMessageId
+			hasMore.value = cursor.value !== null
 		} catch (err) {
 			error.value = err?.message ?? 'Failed to load more items'
 		} finally {
@@ -77,57 +79,61 @@ export function useSharedItems(tokenRef, objectTypeRef) {
 		}
 	}
 
+	/** Reset so the next load() call re-fetches from scratch. */
+	function reset() {
+		items.value = []
+		cursor.value = null
+		hasMore.value = false
+		error.value = null
+		loading.value = false
+		loadingMore.value = false
+		loaded.value = false
+		linkMap.value = new Map()
+	}
+
 	// ── Link extraction ────────────────────────────────────────────────────────
 
 	async function loadLinks(token) {
 		linkMap.value = new Map()
 		cursor.value = null
-		await loadLinksPage(token)
-	}
 
-	async function loadLinksPage(token) {
-		const result = await fetchMessages(token, cursor.value)
+		// Scan all pages of chat history automatically, updating items reactively
+		// after each page so links appear progressively while loading.
+		let done = false
+		while (!done) {
+			const result = await fetchMessages(token, cursor.value)
 
-		// Deduplicate by URL using a Map; first occurrence = newest (scan is newest→oldest)
-		for (const m of result.messages) {
-			if (m.messageType !== 'comment' || m.systemMessage) continue
-			for (const url of extractUrls(m.message)) {
-				if (linkMap.value.has(url)) {
-					// Already seen — just bump the count
-					const existing = linkMap.value.get(url)
-					linkMap.value.set(url, { ...existing, count: existing.count + 1 })
-				} else {
-					linkMap.value.set(url, {
-					id: `link-${url}`,
-					messageId: m.id,
-					timestamp: m.timestamp,
-					actorDisplayName: m.actorDisplayName,
-					url,
-					// Use message text as title only if it adds something beyond the URL itself;
-					// strip the URL from the text and truncate to avoid social-engineering abuse (F-14)
-					title: (() => {
-						const stripped = m.message.trim().replace(url, '').trim()
-						return stripped.length > 0 ? stripped.slice(0, 150) : url
-					})(),
-					count: 1,
-				})
+			for (const m of result.messages) {
+				if (m.messageType !== 'comment' || m.systemMessage) continue
+				for (const url of extractUrls(m.message)) {
+					if (linkMap.value.has(url)) {
+						const existing = linkMap.value.get(url)
+						linkMap.value.set(url, { ...existing, count: existing.count + 1 })
+					} else {
+						linkMap.value.set(url, {
+							id: `link-${url}`,
+							messageId: m.id,
+							timestamp: m.timestamp,
+							actorDisplayName: m.actorDisplayName,
+							url,
+							title: (() => {
+								const stripped = m.message.trim().replace(url, '').trim()
+								return stripped.length > 0 ? stripped.slice(0, 150) : url
+							})(),
+							count: 1,
+						})
+					}
 				}
 			}
+
+			// Update items reactively after each page so links appear as they're found
+			items.value = Array.from(linkMap.value.values())
+			cursor.value = result.lastKnownMessageId
+			done = result.done
 		}
 
-		// Re-derive items array from the map (insertion order = newest first)
-		items.value = Array.from(linkMap.value.values())
-		cursor.value = result.lastKnownMessageId
-		hasMore.value = !result.done
-		if (result.done) {
-			linkScanDone.value = true
-		}
+		hasMore.value = false
 	}
-
-	// Reload whenever token or objectType changes
-	watch([tokenRef, objectTypeRef], () => {
-		load()
-	}, { immediate: false })
 
 	return {
 		items,
@@ -135,8 +141,8 @@ export function useSharedItems(tokenRef, objectTypeRef) {
 		loadingMore,
 		error,
 		hasMore,
-		linkScanDone,
 		load,
 		loadMore,
+		reset,
 	}
 }

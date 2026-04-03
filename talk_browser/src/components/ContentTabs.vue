@@ -17,20 +17,39 @@
 			</button>
 		</div>
 
-		<!-- Search bar (hidden on overview tab) -->
-		<div v-if="activeTab !== 'overview'" class="content-tabs__search">
-			<NcTextField
-				:value="searchQuery"
-				:label="searchLabel"
-				:show-trailing-button="searchQuery.length > 0"
-				trailing-button-icon="close"
-				@update:value="onSearch"
-				@trailing-button-click="clearSearch"
-			>
-				<template #icon>
-					<span class="icon-search" aria-hidden="true" />
-				</template>
-			</NcTextField>
+		<!-- Search + sort toolbar (hidden on overview tab) -->
+		<div v-if="activeTab !== 'overview'" class="content-tabs__toolbar">
+			<div class="content-tabs__search">
+				<NcTextField
+					:value="searchQuery"
+					:label="searchLabel"
+					:show-trailing-button="searchQuery.length > 0"
+					trailing-button-icon="close"
+					@update:value="onSearch"
+					@trailing-button-click="clearSearch"
+				>
+					<template #icon>
+						<span class="icon-search" aria-hidden="true" />
+					</template>
+				</NcTextField>
+			</div>
+
+			<div v-if="currentSortOptions.length" class="content-tabs__sort">
+				<select
+					:id="`tb-sort-${activeTab}`"
+					v-model="sortValue"
+					class="content-tabs__sort-select"
+					:aria-label="t('talk_browser', 'Sort')"
+				>
+					<option
+						v-for="opt in currentSortOptions"
+						:key="opt.value"
+						:value="opt.value"
+					>
+						{{ t('talk_browser', opt.label) }}
+					</option>
+				</select>
+			</div>
 		</div>
 
 		<!-- Tab content slot -->
@@ -40,7 +59,7 @@
 			role="tabpanel"
 			:aria-labelledby="`tb-tab-${activeTab}`"
 		>
-			<slot :active-tab="activeTab" :search-query="searchQuery" />
+			<slot :active-tab="activeTab" :search-query="searchQuery" :sort="sortValue" />
 		</div>
 	</div>
 </template>
@@ -48,7 +67,7 @@
 <script>
 import { NcTextField } from '@nextcloud/vue'
 import { translate as t } from '@nextcloud/l10n'
-import { TABS } from '../constants.js'
+import { TABS, SORT_OPTIONS } from '../constants.js'
 
 export default {
 	name: 'ContentTabs',
@@ -66,6 +85,7 @@ export default {
 		return {
 			tabs: TABS,
 			searchQuery: '',
+			sortValue: 'date-desc',
 		}
 	},
 
@@ -80,6 +100,12 @@ export default {
 				? t('talk_browser', 'Search {type}', { type: t('talk_browser', tab.label) })
 				: t('talk_browser', 'Search…')
 		},
+
+		currentSortOptions() {
+			const tab = this.tabs.find(t => t.id === this.activeTab)
+			if (!tab?.sortKeys?.length) return []
+			return tab.sortKeys.flatMap(key => SORT_OPTIONS[key] ?? [])
+		},
 	},
 
 	methods: {
@@ -87,6 +113,7 @@ export default {
 
 		selectTab(tabId) {
 			this.searchQuery = ''
+			this.sortValue = 'date-desc'
 			this.$emit('input', tabId)
 		},
 
@@ -156,8 +183,51 @@ export default {
 	opacity: 1;
 }
 
-.content-tabs__search {
+.content-tabs__toolbar {
+	display: flex;
+	align-items: center;
+	gap: 8px;
 	padding: 12px 16px 0;
+}
+
+.content-tabs__search {
+	flex: 1;
+	min-width: 0;
+}
+
+/* Remove NcTextField's default top margin so it aligns with the sort select */
+.content-tabs__search :deep(.input-field) {
+	margin-top: 0;
+}
+
+.content-tabs__sort {
+	display: flex;
+	align-items: center;
+	gap: 6px;
+	flex-shrink: 0;
+}
+
+.content-tabs__sort-label {
+	font-size: 13px;
+	color: var(--color-text-maxcontrast);
+	white-space: nowrap;
+	user-select: none;
+}
+
+.content-tabs__sort-select {
+	height: 34px;
+	padding: 0 8px;
+	border: 2px solid var(--color-border-dark, var(--color-border));
+	border-radius: var(--border-radius-large, 8px);
+	background-color: var(--color-main-background);
+	color: var(--color-main-text);
+	font-size: 15px;
+	cursor: pointer;
+	outline-offset: 2px;
+}
+
+.content-tabs__sort-select:focus-visible {
+	outline: 2px solid var(--color-primary-element);
 }
 
 .content-tabs__body {

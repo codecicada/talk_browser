@@ -55,7 +55,7 @@
 				</div>
 
 				<ContentTabs v-model="activeTab">
-					<template #default="{ activeTab: tab, searchQuery }">
+					<template #default="{ activeTab: tab, searchQuery, sort }">
 						<!-- Overview -->
 					<OverviewPanel
 					v-if="tab === 'overview'"
@@ -90,6 +90,7 @@
 							:loading-more="itemsLoadingMore"
 							:has-more="itemsHasMore"
 							:search="searchQuery"
+							:sort="sort"
 							:highlight-id="highlightId"
 							@load-more="loadMoreItems"
 						/>
@@ -102,6 +103,7 @@
 							:loading-more="itemsLoadingMore"
 							:has-more="itemsHasMore"
 							:search="searchQuery"
+							:sort="sort"
 							:highlight-id="highlightId"
 							@load-more="loadMoreItems"
 						/>
@@ -114,6 +116,7 @@
 							:loading-more="itemsLoadingMore"
 							:has-more="itemsHasMore"
 							:search="searchQuery"
+							:sort="sort"
 							:is-voice="false"
 							:highlight-id="highlightId"
 							@load-more="loadMoreItems"
@@ -127,6 +130,7 @@
 							:loading-more="itemsLoadingMore"
 							:has-more="itemsHasMore"
 							:search="searchQuery"
+							:sort="sort"
 							:is-voice="true"
 							:highlight-id="highlightId"
 							@load-more="loadMoreItems"
@@ -137,12 +141,9 @@
 							v-else-if="tab === 'links'"
 							:items="items"
 							:loading="itemsLoading"
-							:loading-more="itemsLoadingMore"
-							:has-more="itemsHasMore"
-							:link-scan-done="linkScanDone"
 							:search="searchQuery"
+							:sort="sort"
 							:highlight-id="highlightId"
-							@load-more="loadMoreItems"
 						/>
 
 						<!-- Locations / deckcard / other / recording -->
@@ -153,6 +154,7 @@
 							:loading-more="itemsLoadingMore"
 							:has-more="itemsHasMore"
 							:search="searchQuery"
+							:sort="sort"
 							:object-type="tab"
 							:highlight-id="highlightId"
 							@load-more="loadMoreItems"
@@ -174,7 +176,7 @@ import {
 	NcLoadingIcon,
 } from '@nextcloud/vue'
 import { translate as t } from '@nextcloud/l10n'
-import { ref, watch, onMounted } from 'vue'
+import { ref, computed, watch, onMounted } from 'vue'
 import { generateUrl } from '@nextcloud/router'
 
 import ConversationPicker from './components/ConversationPicker.vue'
@@ -189,6 +191,7 @@ import GenericList from './components/GenericList.vue'
 import { useConversations } from './composables/useConversations.js'
 import { useSharedItems } from './composables/useSharedItems.js'
 import { fetchShareOverview } from './api/talk.js'
+import { TABS } from './constants.js'
 
 export default {
 	name: 'App',
@@ -256,25 +259,69 @@ export default {
 		const overviewLoading = ref(false)
 		const overviewError = ref(null)
 
-		// ── Shared items (for non-overview tabs) ─────────────────────────────
-		const objectTypeRef = ref('overview')
+		// ── Per-tab shared items cache ────────────────────────────────────────
+		// One useSharedItems instance per non-overview tab, keyed by objectType.
+		// Created once; data persists across tab switches for the session.
+		const TAB_OBJECT_TYPES = TABS
+			.map(t => t.objectType)
+			.filter(t => t && t !== 'overview')
 
-		const {
-			items,
-			loading: itemsLoading,
-			loadingMore: itemsLoadingMore,
-			error: itemsError,
-			hasMore: itemsHasMore,
-			linkScanDone,
-			load: loadItems,
-			loadMore: loadMoreItems,
-		} = useSharedItems(selectedToken, objectTypeRef)
+		const tabStores = Object.fromEntries(
+			TAB_OBJECT_TYPES.map(objectType => [
+				objectType,
+				useSharedItems(selectedToken, objectType),
+			]),
+		)
 
-		// When the conversation changes, reload overview and reset tab
-		watch(selectedToken, async (token) => {
+		// Derived reactive props — computed directly from the active store's refs.
+		// computed() re-evaluates whenever activeTab or any store ref changes,
+		// with no manual syncing required.
+		const activeStore = computed(() => {
+			const tab = activeTab.value
+			if (tab === 'overview') return null
+			return tabStores[tab] ?? null
+		})
+
+		const items = computed(() => activeStore.value?.items.value ?? [])
+		const itemsLoading = computed(() => activeStore.value?.loading.value ?? false)
+		const itemsLoadingMore = computed(() => activeStore.value?.loadingMore.value ?? false)
+		const itemsError = computed(() => activeStore.value?.error.value ?? null)
+		const itemsHasMore = computed(() => activeStore.value?.hasMore.value ?? false)
+
+		// Trigger load when the active tab changes and token is available
+		watch(activeTab, (tab) => {
+			if (tab === 'overview') return
+			const store = tabStores[tab] ?? null
+			if (store && selectedToken.value) {
+				store.load()
+			}
+		})
+
+		function loadItems() {
+			activeStore.value?.load()
+		}
+
+		function loadMoreItems() {
+			activeStore.value?.loadMore()
+		}
+
+		// When the conversation changes, reset all tab stores and reload overview.
+		// Do NOT force activeTab back to 'overview' here — onMounted handles the
+		// initial tab, and the user's manual tab switches should be respected.
+		watch(selectedToken, async (token, oldToken) => {
 			if (!token) return
-			activeTab.value = 'overview'
-			highlightId.value = null
+
+			// Reset every tab store so they re-fetch for the new conversation
+			for (const store of Object.values(tabStores)) {
+				store.reset()
+			}
+
+			// Only jump to overview when switching conversations (not on initial load)
+			if (oldToken) {
+				activeTab.value = 'overview'
+				highlightId.value = null
+			}
+
 			overviewData.value = {}
 			overviewError.value = null
 			overviewLoading.value = true
@@ -293,23 +340,18 @@ export default {
 			} finally {
 				overviewLoading.value = false
 			}
-		})
 
-		// When the active tab changes, update the objectType ref so useSharedItems reacts.
-		// Do NOT call loadItems() here — the watch inside useSharedItems fires automatically
-		// when objectTypeRef changes, and calling it twice causes duplicate results (e.g. links).
-		watch(activeTab, (tab) => {
-			if (tab === 'overview') return
-			objectTypeRef.value = tab
+			// If we're on a non-overview tab (restored from URL), trigger its load now
+			// that the token is confirmed.
+			if (activeTab.value !== 'overview') {
+				tabStores[activeTab.value]?.load()
+			}
 		})
 
 		// Navigate from overview to a specific item in its tab
 		function goToItem({ tab, id }) {
 			highlightId.value = id
 			activeTab.value = tab
-			if (tab !== 'overview') {
-				objectTypeRef.value = tab
-			}
 		}
 
 		// ── Sync state → URL path ────────────────────────────────────────────
@@ -321,19 +363,13 @@ export default {
 		onMounted(async () => {
 			const { token: hashToken, tab: hashTab } = parsePath()
 
-			await loadConversations(hashToken)
-
-			// After loadConversations, the selectedToken watcher fires and resets
-			// activeTab to 'overview'. We wait for the next microtask tick so the
-			// overview fetch triggered by that watcher has started, then apply the
-			// hash tab on top — the overview fetch continues in the background and
-			// overviewLoading guards the UI.
-			if (hashToken && hashTab && hashTab !== 'overview' && selectedToken.value === hashToken) {
-				// Let the watcher's async overview-fetch kick off first
-				await Promise.resolve()
+			// Restore tab BEFORE loading conversations so the selectedToken watcher
+			// sees the correct activeTab and can trigger the right store.load().
+			if (hashToken && hashTab && hashTab !== 'overview') {
 				activeTab.value = hashTab
-				objectTypeRef.value = hashTab
 			}
+
+			await loadConversations(hashToken)
 		})
 
 		return {
@@ -358,7 +394,6 @@ export default {
 			itemsLoadingMore,
 			itemsError,
 			itemsHasMore,
-			linkScanDone,
 			loadItems,
 			loadMoreItems,
 		}
