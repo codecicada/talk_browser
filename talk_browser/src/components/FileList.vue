@@ -25,7 +25,12 @@
 					:aria-label="t('talk_browser', 'Open {name} in Files (opens in new tab)', { name: fileName(item) })"
 				>
 					<span class="file-list__icon-wrap">
-						<span :class="['file-list__icon', mimeIcon(item)]" aria-hidden="true" />
+						<img
+							:src="mimeIconUrl(item)"
+							class="file-list__icon"
+							aria-hidden="true"
+							alt=""
+						>
 					</span>
 
 					<div class="file-list__info">
@@ -135,14 +140,12 @@ export default {
 				?? 'Unknown file'
 		},
 
-		mimeIcon(item) {
-			const mime = item.messageParameters?.file?.mimetype ?? ''
-			if (mime.startsWith('image/')) return 'icon-image'
-			if (mime.startsWith('video/')) return 'icon-video'
-			if (mime.startsWith('audio/')) return 'icon-sound'
-			if (mime.includes('pdf')) return 'icon-pdf'
-			if (mime.includes('zip') || mime.includes('tar')) return 'icon-archive'
-			return 'icon-file'
+		mimeIconUrl(item) {
+			const mime = item.messageParameters?.file?.mimetype ?? 'application/octet-stream'
+			// OC.MimeType.getIconUrl is provided by Nextcloud core globally
+			// and returns a themed SVG URL for any MIME type.
+			return window.OC?.MimeType?.getIconUrl(mime)
+				?? `/core/img/filetypes/file.svg`
 		},
 
 		formatSize(bytes) {
@@ -233,9 +236,9 @@ export default {
 }
 
 .file-list__icon {
-	width: 20px;
-	height: 20px;
-	opacity: 0.75;
+	width: 22px;
+	height: 22px;
+	object-fit: contain;
 }
 
 .file-list__info {
