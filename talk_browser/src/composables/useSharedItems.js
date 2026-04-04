@@ -110,18 +110,19 @@ export function useSharedItems(tokenRef, objectType) {
 						const existing = linkMap.value.get(url)
 						linkMap.value.set(url, { ...existing, count: existing.count + 1 })
 					} else {
-						linkMap.value.set(url, {
-							id: `link-${url}`,
-							messageId: m.id,
-							timestamp: m.timestamp,
-							actorDisplayName: m.actorDisplayName,
-							url,
-							title: (() => {
-								const stripped = m.message.trim().replace(url, '').trim()
-								return stripped.length > 0 ? stripped.slice(0, 150) : url
-							})(),
-							count: 1,
-						})
+					linkMap.value.set(url, {
+						id: `link-${url}`,
+						messageId: m.id,
+						conversationToken: token,
+						timestamp: m.timestamp,
+						actorDisplayName: m.actorDisplayName,
+						url,
+						title: (() => {
+							const stripped = m.message.trim().replace(url, '').trim()
+							return stripped.length > 0 ? stripped.slice(0, 150) : url
+						})(),
+						count: 1,
+					})
 					}
 				}
 			}

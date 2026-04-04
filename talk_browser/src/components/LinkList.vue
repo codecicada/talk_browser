@@ -17,13 +17,9 @@
 			:data-id="item.id"
 			class="link-list__item"
 		>
-			<a
-				:href="safeUrl(item.url) || '#'"
-				target="_blank"
-				rel="noopener noreferrer"
-				class="link-list__link"
-			>
-				<!-- OG image thumbnail (proxied); falls back to link SVG icon -->
+			<!-- Outer div is non-interactive; only the title anchor and open-icon anchor navigate -->
+			<div class="link-list__link">
+				<!-- OG image thumbnail (proxied); falls back to link SVG icon — non-interactive -->
 				<img
 					v-if="!ogFailed[item.id]"
 					:src="ogProxyUrl(item.url)"
@@ -37,12 +33,18 @@
 				</svg>
 
 				<div class="link-list__info">
-					<span class="link-list__title">
+					<!-- Title anchor: opens external URL -->
+					<a
+						:href="safeUrl(item.url) || '#'"
+						target="_blank"
+						rel="noopener noreferrer"
+						class="link-list__title"
+					>
 						{{ resolvedTitle(item) }}
 						<span v-if="item.count > 1" class="link-list__count" :title="t('talk_browser', '{count} times shared', { count: item.count })">
 							&times;{{ item.count }}
 						</span>
-					</span>
+					</a>
 					<span
 						v-if="resolvedDescription(item)"
 						class="link-list__description"
@@ -52,11 +54,28 @@
 						{{ item.actorDisplayName }}
 						&middot;
 						{{ formatDate(item.timestamp) }}
+						&middot;
+						<!-- Go to message: navigates to the Talk conversation at the exact message -->
+						<a
+							:href="generateUrl('/call/' + item.conversationToken) + '#message_' + item.messageId"
+							target="_blank"
+							rel="noopener noreferrer"
+							class="link-list__goto"
+						>{{ t('talk_browser', 'Go to message') }}</a>
 					</span>
 				</div>
 
-				<span class="icon-external link-list__open-icon" aria-hidden="true" />
-			</a>
+				<!-- External icon anchor: also opens external URL -->
+				<a
+					:href="safeUrl(item.url) || '#'"
+					target="_blank"
+					rel="noopener noreferrer"
+					class="link-list__open-icon-link"
+					:aria-label="t('talk_browser', 'Open link in new tab')"
+				>
+					<span class="icon-external link-list__open-icon" aria-hidden="true" />
+				</a>
+			</div>
 		</li>
 		</ul>
 
@@ -149,6 +168,7 @@ export default {
 	methods: {
 		t,
 		safeUrl,
+		generateUrl,
 
 		ogProxyUrl(url) {
 			return generateUrl('/apps/talk_browser/api/og-image') + '?url=' + encodeURIComponent(url)
@@ -244,14 +264,14 @@ export default {
 	animation: tb-highlight-fade 2s ease forwards;
 }
 
+/* Outer wrapper is a plain div — no pointer cursor, subtle hover for the whole row */
 .link-list__link {
 	display: flex;
 	align-items: flex-start;
 	gap: 12px;
 	padding: 10px 12px;
 	border-radius: 8px;
-	text-decoration: none;
-	color: inherit;
+	cursor: default;
 	transition: background 0.1s;
 }
 
@@ -284,6 +304,7 @@ export default {
 	min-width: 0;
 }
 
+/* Title is now an anchor — keep it looking the same, add pointer + underline on hover */
 .link-list__title {
 	display: block;
 	font-weight: 500;
@@ -291,6 +312,14 @@ export default {
 	overflow: hidden;
 	text-overflow: ellipsis;
 	color: var(--color-primary-element);
+	text-decoration: none;
+	cursor: pointer;
+}
+
+.link-list__title:hover,
+.link-list__title:focus {
+	text-decoration: underline;
+	outline: none;
 }
 
 .link-list__count {
@@ -333,12 +362,40 @@ export default {
 	margin-top: 2px;
 }
 
-.link-list__open-icon {
+/* "Go to message" link — secondary style, muted, underlines on hover */
+.link-list__goto {
+	color: var(--color-text-maxcontrast);
+	text-decoration: none;
+	cursor: pointer;
+}
+
+.link-list__goto:hover,
+.link-list__goto:focus {
+	color: var(--color-main-text);
+	text-decoration: underline;
+	outline: none;
+}
+
+/* External icon anchor wrapper */
+.link-list__open-icon-link {
+	display: flex;
+	align-items: center;
 	flex-shrink: 0;
+	cursor: pointer;
+	color: inherit;
+	text-decoration: none;
+	margin-top: 4px;
+}
+
+.link-list__open-icon-link:hover .link-list__open-icon,
+.link-list__open-icon-link:focus .link-list__open-icon {
+	opacity: 0.8;
+}
+
+.link-list__open-icon {
 	width: 16px;
 	height: 16px;
 	opacity: 0.4;
-	margin-top: 4px;
 }
 
 .link-list__loading {
