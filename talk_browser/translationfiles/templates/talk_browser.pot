@@ -1,0 +1,421 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the Nextcloud package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: Nextcloud 3.14159\n"
+"Report-Msgid-Bugs-To: translations\\@example.com\n"
+"POT-Creation-Date: 2026-04-03 23:43+0000\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"Language: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+#: /apps-dev/talk_browser/specialAppInfoFakeDummyForL10nScript.php:2
+msgid "Talk Browser"
+msgstr ""
+
+#: /apps-dev/talk_browser/specialAppInfoFakeDummyForL10nScript.php:3
+msgid ""
+"Browse Talk conversation content by type: files, links, images, audio and "
+"more"
+msgstr ""
+
+#: /apps-dev/talk_browser/specialAppInfoFakeDummyForL10nScript.php:4
+msgid ""
+"Talk Content Browser adds a dedicated page to Nextcloud where you can "
+"explore the content shared in any Talk conversation — grouped by type.\n"
+"\n"
+"**Features:**\n"
+"- Browse content in any Talk conversation (defaults to Note to Self)\n"
+"- Tabs for: All, Images & Video, Files, Audio, Voice notes, Links, "
+"Locations, Other\n"
+"- Search within each content type\n"
+"- Click any item to open it or jump to its message in Talk\n"
+"\n"
+"**Requirements:** Nextcloud Talk (spreed) must be installed and enabled."
+msgstr ""
+
+#. TRANSLATORS src/App.vue:19
+#. TRANSLATORS src/components/ConversationPicker.vue:5
+#: /apps-dev/talk_browser/specialVueFakeDummyForL10nScript.js:207
+#: /apps-dev/talk_browser/specialVueFakeDummyForL10nScript.js:458
+msgid "Loading conversations…"
+msgstr ""
+
+#. TRANSLATORS src/App.vue:25
+#: /apps-dev/talk_browser/specialVueFakeDummyForL10nScript.js:209
+msgid "Could not load conversations"
+msgstr ""
+
+#. TRANSLATORS src/App.vue:26
+#: /apps-dev/talk_browser/specialVueFakeDummyForL10nScript.js:211
+msgid ""
+"There was a problem connecting to Nextcloud Talk. Please check your "
+"connection and try again."
+msgstr ""
+
+#. TRANSLATORS src/App.vue:33
+#: /apps-dev/talk_browser/specialVueFakeDummyForL10nScript.js:213
+#: /apps-dev/talk_browser/specialVueFakeDummyForL10nScript.js:223
+msgid "Retry"
+msgstr ""
+
+#. TRANSLATORS src/App.vue:41
+#: /apps-dev/talk_browser/specialVueFakeDummyForL10nScript.js:215
+msgid "Select a conversation"
+msgstr ""
+
+#. TRANSLATORS src/App.vue:42
+#: /apps-dev/talk_browser/specialVueFakeDummyForL10nScript.js:217
+msgid "Choose a Talk conversation from the sidebar to browse its content"
+msgstr ""
+
+#. TRANSLATORS src/App.vue:72
+#: /apps-dev/talk_browser/specialVueFakeDummyForL10nScript.js:219
+msgid "Could not load content"
+msgstr ""
+
+#. TRANSLATORS src/App.vue:73
+#: /apps-dev/talk_browser/specialVueFakeDummyForL10nScript.js:221
+msgid "There was a problem loading shared items. Please try again."
+msgstr ""
+
+#: /apps-dev/talk_browser/specialVueFakeDummyForL10nScript.js:276
+#: /apps-dev/talk_browser/specialVueFakeDummyForL10nScript.js:512
+#: /apps-dev/talk_browser/specialVueFakeDummyForL10nScript.js:640
+#: /apps-dev/talk_browser/specialVueFakeDummyForL10nScript.js:792
+#: /apps-dev/talk_browser/specialVueFakeDummyForL10nScript.js:939
+msgid "No results for \"{search}\""
+msgstr ""
+
+#: /apps-dev/talk_browser/specialVueFakeDummyForL10nScript.js:279
+msgid "No voice notes yet"
+msgstr ""
+
+#: /apps-dev/talk_browser/specialVueFakeDummyForL10nScript.js:280
+msgid "No audio files yet"
+msgstr ""
+
+#: /apps-dev/talk_browser/specialVueFakeDummyForL10nScript.js:285
+#: /apps-dev/talk_browser/specialVueFakeDummyForL10nScript.js:518
+#: /apps-dev/talk_browser/specialVueFakeDummyForL10nScript.js:650
+#: /apps-dev/talk_browser/specialVueFakeDummyForL10nScript.js:798
+#: /apps-dev/talk_browser/specialVueFakeDummyForL10nScript.js:945
+msgid "Try a different search term"
+msgstr ""
+
+#: /apps-dev/talk_browser/specialVueFakeDummyForL10nScript.js:288
+msgid "Record a voice note in Talk to see it here"
+msgstr ""
+
+#: /apps-dev/talk_browser/specialVueFakeDummyForL10nScript.js:289
+msgid "Share an audio file in this conversation to see it here"
+msgstr ""
+
+#. TRANSLATORS src/components/AudioList.vue:33
+#: /apps-dev/talk_browser/specialVueFakeDummyForL10nScript.js:331
+msgid "Audio unavailable"
+msgstr ""
+
+#. TRANSLATORS src/components/AudioList.vue:52
+#. TRANSLATORS src/components/FileList.vue:25
+#: /apps-dev/talk_browser/specialVueFakeDummyForL10nScript.js:333
+#: /apps-dev/talk_browser/specialVueFakeDummyForL10nScript.js:583
+msgid "Open {name} in Files (opens in new tab)"
+msgstr ""
+
+#. TRANSLATORS src/components/AudioList.vue:61
+#: /apps-dev/talk_browser/specialVueFakeDummyForL10nScript.js:335
+msgid "Loading audio…"
+msgstr ""
+
+#. TRANSLATORS src/components/AudioList.vue:67
+#. TRANSLATORS src/components/GenericList.vue:62
+#: /apps-dev/talk_browser/specialVueFakeDummyForL10nScript.js:337
+#: /apps-dev/talk_browser/specialVueFakeDummyForL10nScript.js:725
+msgid "Loading more…"
+msgstr ""
+
+#. TRANSLATORS src/components/AudioList.vue:73
+#. TRANSLATORS src/components/FileList.vue:59
+#. TRANSLATORS src/components/GenericList.vue:67
+#. TRANSLATORS src/components/MediaGallery.vue:54
+#: /apps-dev/talk_browser/specialVueFakeDummyForL10nScript.js:339
+#: /apps-dev/talk_browser/specialVueFakeDummyForL10nScript.js:589
+#: /apps-dev/talk_browser/specialVueFakeDummyForL10nScript.js:727
+#: /apps-dev/talk_browser/specialVueFakeDummyForL10nScript.js:1047
+msgid "Load more"
+msgstr ""
+
+#: /apps-dev/talk_browser/specialVueFakeDummyForL10nScript.js:372
+msgid "Search {type}"
+msgstr ""
+
+#. TRANSLATORS src/components/ConversationPicker.vue:12
+#: /apps-dev/talk_browser/specialVueFakeDummyForL10nScript.js:373
+#: /apps-dev/talk_browser/specialVueFakeDummyForL10nScript.js:462
+msgid "Search…"
+msgstr ""
+
+#. TRANSLATORS src/components/ContentTabs.vue:4
+#: /apps-dev/talk_browser/specialVueFakeDummyForL10nScript.js:396
+msgid "Content types"
+msgstr ""
+
+#. TRANSLATORS src/components/ConversationPicker.vue:11
+#: /apps-dev/talk_browser/specialVueFakeDummyForL10nScript.js:460
+msgid "Search conversations"
+msgstr ""
+
+#. TRANSLATORS src/components/ConversationPicker.vue:21
+#: /apps-dev/talk_browser/specialVueFakeDummyForL10nScript.js:464
+msgid "No conversations found"
+msgstr ""
+
+#. TRANSLATORS src/components/ConversationPicker.vue:32
+#: /apps-dev/talk_browser/specialVueFakeDummyForL10nScript.js:466
+msgid "Conversations"
+msgstr ""
+
+#. TRANSLATORS src/components/ConversationPicker.vue:77
+#: /apps-dev/talk_browser/specialVueFakeDummyForL10nScript.js:468
+msgid "You"
+msgstr ""
+
+#: /apps-dev/talk_browser/specialVueFakeDummyForL10nScript.js:513
+msgid "No files yet"
+msgstr ""
+
+#: /apps-dev/talk_browser/specialVueFakeDummyForL10nScript.js:519
+msgid "Share a file in this conversation to see it here"
+msgstr ""
+
+#. TRANSLATORS src/components/FileList.vue:49
+#: /apps-dev/talk_browser/specialVueFakeDummyForL10nScript.js:585
+msgid "Loading files…"
+msgstr ""
+
+#. TRANSLATORS src/components/FileList.vue:54
+#: /apps-dev/talk_browser/specialVueFakeDummyForL10nScript.js:587
+msgid "Loading more files…"
+msgstr ""
+
+#: /apps-dev/talk_browser/specialVueFakeDummyForL10nScript.js:642
+msgid "No locations yet"
+msgstr ""
+
+#: /apps-dev/talk_browser/specialVueFakeDummyForL10nScript.js:643
+msgid "No Deck cards yet"
+msgstr ""
+
+#: /apps-dev/talk_browser/specialVueFakeDummyForL10nScript.js:644
+msgid "No recordings yet"
+msgstr ""
+
+#: /apps-dev/talk_browser/specialVueFakeDummyForL10nScript.js:645
+msgid "Nothing here yet"
+msgstr ""
+
+#: /apps-dev/talk_browser/specialVueFakeDummyForL10nScript.js:651
+msgid "Share content in this conversation to see it here"
+msgstr ""
+
+#. TRANSLATORS src/components/GenericList.vue:22
+#. TRANSLATORS src/components/OverviewPanel.vue:75
+#: /apps-dev/talk_browser/specialVueFakeDummyForL10nScript.js:719
+#: /apps-dev/talk_browser/specialVueFakeDummyForL10nScript.js:1137
+msgid "Open {name}"
+msgstr ""
+
+#. TRANSLATORS src/components/GenericList.vue:45
+#: /apps-dev/talk_browser/specialVueFakeDummyForL10nScript.js:721
+msgid "Open on map"
+msgstr ""
+
+#. TRANSLATORS src/components/GenericList.vue:57
+#. TRANSLATORS src/components/LinkList.vue:68
+#: /apps-dev/talk_browser/specialVueFakeDummyForL10nScript.js:723
+#: /apps-dev/talk_browser/specialVueFakeDummyForL10nScript.js:876
+msgid "Loading…"
+msgstr ""
+
+#: /apps-dev/talk_browser/specialVueFakeDummyForL10nScript.js:793
+msgid "No links found yet"
+msgstr ""
+
+#: /apps-dev/talk_browser/specialVueFakeDummyForL10nScript.js:799
+msgid "Type a URL into this conversation to see it here"
+msgstr ""
+
+#. TRANSLATORS src/components/LinkList.vue:42
+#: /apps-dev/talk_browser/specialVueFakeDummyForL10nScript.js:872
+msgid "{count} times shared"
+msgstr ""
+
+#. TRANSLATORS src/components/LinkList.vue:66
+#: /apps-dev/talk_browser/specialVueFakeDummyForL10nScript.js:874
+msgid "Scanning message history for links…"
+msgstr ""
+
+#. TRANSLATORS src/components/LinkList.vue:74
+#: /apps-dev/talk_browser/specialVueFakeDummyForL10nScript.js:878
+msgid "Scanning more history…"
+msgstr ""
+
+#. TRANSLATORS src/components/LinkList.vue:80
+#: /apps-dev/talk_browser/specialVueFakeDummyForL10nScript.js:880
+msgid "Scan more history"
+msgstr ""
+
+#: /apps-dev/talk_browser/specialVueFakeDummyForL10nScript.js:940
+msgid "No images or videos yet"
+msgstr ""
+
+#: /apps-dev/talk_browser/specialVueFakeDummyForL10nScript.js:946
+msgid "Share an image or video in this conversation to see it here"
+msgstr ""
+
+#. TRANSLATORS src/components/MediaGallery.vue:19
+#: /apps-dev/talk_browser/specialVueFakeDummyForL10nScript.js:1041
+msgid "Open {name} in lightbox"
+msgstr ""
+
+#. TRANSLATORS src/components/MediaGallery.vue:44
+#: /apps-dev/talk_browser/specialVueFakeDummyForL10nScript.js:1043
+msgid "Loading media…"
+msgstr ""
+
+#. TRANSLATORS src/components/MediaGallery.vue:49
+#: /apps-dev/talk_browser/specialVueFakeDummyForL10nScript.js:1045
+msgid "Loading more media…"
+msgstr ""
+
+#. TRANSLATORS src/components/MediaGallery.vue:70
+#: /apps-dev/talk_browser/specialVueFakeDummyForL10nScript.js:1049
+msgid "Previous"
+msgstr ""
+
+#. TRANSLATORS src/components/MediaGallery.vue:88
+#: /apps-dev/talk_browser/specialVueFakeDummyForL10nScript.js:1051
+msgid "Next"
+msgstr ""
+
+#. TRANSLATORS src/components/MediaGallery.vue:127
+#: /apps-dev/talk_browser/specialVueFakeDummyForL10nScript.js:1053
+msgid "Open in Files"
+msgstr ""
+
+#. TRANSLATORS src/components/OverviewPanel.vue:5
+#: /apps-dev/talk_browser/specialVueFakeDummyForL10nScript.js:1121
+msgid "Loading overview…"
+msgstr ""
+
+#. TRANSLATORS src/components/OverviewPanel.vue:10
+#: /apps-dev/talk_browser/specialVueFakeDummyForL10nScript.js:1123
+msgid "Could not load overview"
+msgstr ""
+
+#. TRANSLATORS src/components/OverviewPanel.vue:11
+#: /apps-dev/talk_browser/specialVueFakeDummyForL10nScript.js:1125
+msgid ""
+"There was a problem loading the overview. Please try selecting the "
+"conversation again."
+msgstr ""
+
+#. TRANSLATORS src/components/OverviewPanel.vue:20
+#: /apps-dev/talk_browser/specialVueFakeDummyForL10nScript.js:1127
+msgid "No shared content yet"
+msgstr ""
+
+#. TRANSLATORS src/components/OverviewPanel.vue:21
+#: /apps-dev/talk_browser/specialVueFakeDummyForL10nScript.js:1129
+msgid ""
+"Share files, images, audio, or locations in this conversation to see them "
+"here. Plain links appear in the Links tab."
+msgstr ""
+
+#. TRANSLATORS src/components/OverviewPanel.vue:44
+#: /apps-dev/talk_browser/specialVueFakeDummyForL10nScript.js:1133
+msgid "See all"
+msgstr ""
+
+#. TRANSLATORS src/components/OverviewPanel.vue:54
+#: /apps-dev/talk_browser/specialVueFakeDummyForL10nScript.js:1135
+msgid "Open {name} in media tab"
+msgstr ""
+
+#. TRANSLATORS src/components/OverviewPanel.vue:41
+#: /apps-dev/talk_browser/specialVueFakeDummyForL10nScript.js:1131
+msgid "See all {section}"
+msgstr ""
+
+#: /apps-dev/talk_browser/src/l10n-strings.js:17
+msgid "Overview"
+msgstr ""
+
+#: /apps-dev/talk_browser/src/l10n-strings.js:18
+msgid "Images & Video"
+msgstr ""
+
+#: /apps-dev/talk_browser/src/l10n-strings.js:19
+msgid "Files"
+msgstr ""
+
+#: /apps-dev/talk_browser/src/l10n-strings.js:20
+msgid "Audio"
+msgstr ""
+
+#: /apps-dev/talk_browser/src/l10n-strings.js:21
+msgid "Voice notes"
+msgstr ""
+
+#: /apps-dev/talk_browser/src/l10n-strings.js:22
+msgid "Links"
+msgstr ""
+
+#: /apps-dev/talk_browser/src/l10n-strings.js:23
+msgid "Locations"
+msgstr ""
+
+#: /apps-dev/talk_browser/src/l10n-strings.js:24
+msgid "Other"
+msgstr ""
+
+#: /apps-dev/talk_browser/src/l10n-strings.js:27
+msgid "Newest first"
+msgstr ""
+
+#: /apps-dev/talk_browser/src/l10n-strings.js:28
+msgid "Oldest first"
+msgstr ""
+
+#: /apps-dev/talk_browser/src/l10n-strings.js:29
+msgid "Name A→Z"
+msgstr ""
+
+#: /apps-dev/talk_browser/src/l10n-strings.js:30
+msgid "Name Z→A"
+msgstr ""
+
+#: /apps-dev/talk_browser/src/l10n-strings.js:31
+msgid "Largest first"
+msgstr ""
+
+#: /apps-dev/talk_browser/src/l10n-strings.js:32
+msgid "Smallest first"
+msgstr ""
+
+#: /apps-dev/talk_browser/src/l10n-strings.js:33
+msgid "Most shared"
+msgstr ""
+
+#: /apps-dev/talk_browser/src/l10n-strings.js:34
+msgid "Least shared"
+msgstr ""

@@ -4,3 +4,4 @@ css/
 vendor/
 *.log
 .DS_Store
+translationtool.phar

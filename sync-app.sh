@@ -21,9 +21,9 @@ fi
 
 echo "Syncing $APP_DIR → $CONTAINER:$DEST ..."
 
-# Sync all source directories (PHP, templates, config, compiled JS/CSS)
+# Sync all source directories (PHP, templates, config, compiled JS/CSS, l10n)
 # Use "/dir/." notation to copy directory *contents* into the destination
-for dir in appinfo lib templates img js css; do
+for dir in appinfo lib templates img js css l10n; do
   if [ -d "$APP_DIR/$dir" ]; then
     docker cp "$APP_DIR/$dir/." "$CONTAINER:$DEST/$dir/"
   fi

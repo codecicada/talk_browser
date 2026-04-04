@@ -2,6 +2,11 @@
  * Shared item type definitions.
  * Each tab maps to an objectType from the Talk share API,
  * or to a special 'links' type that is extracted client-side.
+ *
+ * NOTE: All string labels (TABS[].label, SORT_OPTIONS[*][].label) are plain
+ * strings here and wrapped with t() at render time. To ensure the extraction
+ * tool (translationtool.phar) discovers them, explicit t() calls for every
+ * label must be kept in sync in src/l10n-strings.js.
  */
 
 /**

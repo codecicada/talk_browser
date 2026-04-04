@@ -1,0 +1,390 @@
+# French translation of Talk Browser
+# Copyright (C) 2026 Talk Browser contributors
+# This file is distributed under the same license as the Nextcloud package.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: Nextcloud 3.14159\n"
+"Report-Msgid-Bugs-To: translations@example.com\n"
+"POT-Creation-Date: 2026-04-03 23:43+0000\n"
+"PO-Revision-Date: 2026-04-03 00:00+0000\n"
+"Last-Translator: Talk Browser Developer\n"
+"Language-Team: French\n"
+"Language: fr\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n > 1);\n"
+
+#: /apps-dev/talk_browser/specialAppInfoFakeDummyForL10nScript.php:2
+msgid "Talk Browser"
+msgstr "Navigateur Talk"
+
+#: /apps-dev/talk_browser/specialAppInfoFakeDummyForL10nScript.php:3
+msgid ""
+"Browse Talk conversation content by type: files, links, images, audio and "
+"more"
+msgstr ""
+"Parcourez le contenu des conversations Talk par type : fichiers, liens, "
+"images, audio et plus encore"
+
+#: /apps-dev/talk_browser/specialAppInfoFakeDummyForL10nScript.php:4
+msgid ""
+"Talk Content Browser adds a dedicated page to Nextcloud where you can "
+"explore the content shared in any Talk conversation — grouped by type.\n"
+"\n"
+"**Features:**\n"
+"- Browse content in any Talk conversation (defaults to Note to Self)\n"
+"- Tabs for: All, Images & Video, Files, Audio, Voice notes, Links, "
+"Locations, Other\n"
+"- Search within each content type\n"
+"- Click any item to open it or jump to its message in Talk\n"
+"\n"
+"**Requirements:** Nextcloud Talk (spreed) must be installed and enabled."
+msgstr ""
+"Navigateur de contenu Talk ajoute une page dédiée à Nextcloud où vous "
+"pouvez explorer le contenu partagé dans n'importe quelle conversation "
+"Talk — regroupé par type.\n"
+"\n"
+"**Fonctionnalités :**\n"
+"- Parcourez le contenu de n'importe quelle conversation Talk (par défaut : Note personnelle)\n"
+"- Onglets : Tout, Images & Vidéo, Fichiers, Audio, Notes vocales, Liens, "
+"Localisations, Autre\n"
+"- Recherche dans chaque type de contenu\n"
+"- Cliquez sur un élément pour l'ouvrir ou accéder à son message dans Talk\n"
+"\n"
+"**Prérequis :** Nextcloud Talk (spreed) doit être installé et activé."
+
+#: /apps-dev/talk_browser/specialVueFakeDummyForL10nScript.js:207
+#: /apps-dev/talk_browser/specialVueFakeDummyForL10nScript.js:458
+msgid "Loading conversations…"
+msgstr "Chargement des conversations…"
+
+#: /apps-dev/talk_browser/specialVueFakeDummyForL10nScript.js:209
+msgid "Could not load conversations"
+msgstr "Impossible de charger les conversations"
+
+#: /apps-dev/talk_browser/specialVueFakeDummyForL10nScript.js:211
+msgid ""
+"There was a problem connecting to Nextcloud Talk. Please check your "
+"connection and try again."
+msgstr ""
+"Un problème est survenu lors de la connexion à Nextcloud Talk. Vérifiez "
+"votre connexion et réessayez."
+
+#: /apps-dev/talk_browser/specialVueFakeDummyForL10nScript.js:213
+#: /apps-dev/talk_browser/specialVueFakeDummyForL10nScript.js:223
+msgid "Retry"
+msgstr "Réessayer"
+
+#: /apps-dev/talk_browser/specialVueFakeDummyForL10nScript.js:215
+msgid "Select a conversation"
+msgstr "Sélectionner une conversation"
+
+#: /apps-dev/talk_browser/specialVueFakeDummyForL10nScript.js:217
+msgid "Choose a Talk conversation from the sidebar to browse its content"
+msgstr "Choisissez une conversation Talk dans la barre latérale pour parcourir son contenu"
+
+#: /apps-dev/talk_browser/specialVueFakeDummyForL10nScript.js:219
+msgid "Could not load content"
+msgstr "Impossible de charger le contenu"
+
+#: /apps-dev/talk_browser/specialVueFakeDummyForL10nScript.js:221
+msgid "There was a problem loading shared items. Please try again."
+msgstr "Un problème est survenu lors du chargement des éléments partagés. Veuillez réessayer."
+
+#: /apps-dev/talk_browser/specialVueFakeDummyForL10nScript.js:276
+#: /apps-dev/talk_browser/specialVueFakeDummyForL10nScript.js:512
+#: /apps-dev/talk_browser/specialVueFakeDummyForL10nScript.js:640
+#: /apps-dev/talk_browser/specialVueFakeDummyForL10nScript.js:792
+#: /apps-dev/talk_browser/specialVueFakeDummyForL10nScript.js:939
+msgid "No results for \"{search}\""
+msgstr "Aucun résultat pour « {search} »"
+
+#: /apps-dev/talk_browser/specialVueFakeDummyForL10nScript.js:279
+msgid "No voice notes yet"
+msgstr "Aucune note vocale pour l'instant"
+
+#: /apps-dev/talk_browser/specialVueFakeDummyForL10nScript.js:280
+msgid "No audio files yet"
+msgstr "Aucun fichier audio pour l'instant"
+
+#: /apps-dev/talk_browser/specialVueFakeDummyForL10nScript.js:285
+#: /apps-dev/talk_browser/specialVueFakeDummyForL10nScript.js:518
+#: /apps-dev/talk_browser/specialVueFakeDummyForL10nScript.js:650
+#: /apps-dev/talk_browser/specialVueFakeDummyForL10nScript.js:798
+#: /apps-dev/talk_browser/specialVueFakeDummyForL10nScript.js:945
+msgid "Try a different search term"
+msgstr "Essayez un autre terme de recherche"
+
+#: /apps-dev/talk_browser/specialVueFakeDummyForL10nScript.js:288
+msgid "Record a voice note in Talk to see it here"
+msgstr "Enregistrez une note vocale dans Talk pour la voir ici"
+
+#: /apps-dev/talk_browser/specialVueFakeDummyForL10nScript.js:289
+msgid "Share an audio file in this conversation to see it here"
+msgstr "Partagez un fichier audio dans cette conversation pour le voir ici"
+
+#: /apps-dev/talk_browser/specialVueFakeDummyForL10nScript.js:331
+msgid "Audio unavailable"
+msgstr "Audio indisponible"
+
+#: /apps-dev/talk_browser/specialVueFakeDummyForL10nScript.js:333
+#: /apps-dev/talk_browser/specialVueFakeDummyForL10nScript.js:583
+msgid "Open {name} in Files (opens in new tab)"
+msgstr "Ouvrir {name} dans Fichiers (nouvel onglet)"
+
+#: /apps-dev/talk_browser/specialVueFakeDummyForL10nScript.js:335
+msgid "Loading audio…"
+msgstr "Chargement de l'audio…"
+
+#: /apps-dev/talk_browser/specialVueFakeDummyForL10nScript.js:337
+#: /apps-dev/talk_browser/specialVueFakeDummyForL10nScript.js:725
+msgid "Loading more…"
+msgstr "Chargement de la suite…"
+
+#: /apps-dev/talk_browser/specialVueFakeDummyForL10nScript.js:339
+#: /apps-dev/talk_browser/specialVueFakeDummyForL10nScript.js:589
+#: /apps-dev/talk_browser/specialVueFakeDummyForL10nScript.js:727
+#: /apps-dev/talk_browser/specialVueFakeDummyForL10nScript.js:1047
+msgid "Load more"
+msgstr "Charger plus"
+
+#: /apps-dev/talk_browser/specialVueFakeDummyForL10nScript.js:372
+msgid "Search {type}"
+msgstr "Rechercher {type}"
+
+#: /apps-dev/talk_browser/specialVueFakeDummyForL10nScript.js:373
+#: /apps-dev/talk_browser/specialVueFakeDummyForL10nScript.js:462
+msgid "Search…"
+msgstr "Rechercher…"
+
+#: /apps-dev/talk_browser/specialVueFakeDummyForL10nScript.js:396
+msgid "Content types"
+msgstr "Types de contenu"
+
+#: /apps-dev/talk_browser/specialVueFakeDummyForL10nScript.js:460
+msgid "Search conversations"
+msgstr "Rechercher des conversations"
+
+#: /apps-dev/talk_browser/specialVueFakeDummyForL10nScript.js:464
+msgid "No conversations found"
+msgstr "Aucune conversation trouvée"
+
+#: /apps-dev/talk_browser/specialVueFakeDummyForL10nScript.js:466
+msgid "Conversations"
+msgstr "Conversations"
+
+#: /apps-dev/talk_browser/specialVueFakeDummyForL10nScript.js:468
+msgid "You"
+msgstr "Vous"
+
+#: /apps-dev/talk_browser/specialVueFakeDummyForL10nScript.js:513
+msgid "No files yet"
+msgstr "Aucun fichier pour l'instant"
+
+#: /apps-dev/talk_browser/specialVueFakeDummyForL10nScript.js:519
+msgid "Share a file in this conversation to see it here"
+msgstr "Partagez un fichier dans cette conversation pour le voir ici"
+
+#: /apps-dev/talk_browser/specialVueFakeDummyForL10nScript.js:585
+msgid "Loading files…"
+msgstr "Chargement des fichiers…"
+
+#: /apps-dev/talk_browser/specialVueFakeDummyForL10nScript.js:587
+msgid "Loading more files…"
+msgstr "Chargement de fichiers supplémentaires…"
+
+#: /apps-dev/talk_browser/specialVueFakeDummyForL10nScript.js:642
+msgid "No locations yet"
+msgstr "Aucune localisation pour l'instant"
+
+#: /apps-dev/talk_browser/specialVueFakeDummyForL10nScript.js:643
+msgid "No Deck cards yet"
+msgstr "Aucune carte Deck pour l'instant"
+
+#: /apps-dev/talk_browser/specialVueFakeDummyForL10nScript.js:644
+msgid "No recordings yet"
+msgstr "Aucun enregistrement pour l'instant"
+
+#: /apps-dev/talk_browser/specialVueFakeDummyForL10nScript.js:645
+msgid "Nothing here yet"
+msgstr "Rien ici pour l'instant"
+
+#: /apps-dev/talk_browser/specialVueFakeDummyForL10nScript.js:651
+msgid "Share content in this conversation to see it here"
+msgstr "Partagez du contenu dans cette conversation pour le voir ici"
+
+#: /apps-dev/talk_browser/specialVueFakeDummyForL10nScript.js:719
+#: /apps-dev/talk_browser/specialVueFakeDummyForL10nScript.js:1137
+msgid "Open {name}"
+msgstr "Ouvrir {name}"
+
+#: /apps-dev/talk_browser/specialVueFakeDummyForL10nScript.js:721
+msgid "Open on map"
+msgstr "Ouvrir sur la carte"
+
+#: /apps-dev/talk_browser/specialVueFakeDummyForL10nScript.js:723
+#: /apps-dev/talk_browser/specialVueFakeDummyForL10nScript.js:876
+msgid "Loading…"
+msgstr "Chargement…"
+
+#: /apps-dev/talk_browser/specialVueFakeDummyForL10nScript.js:793
+msgid "No links found yet"
+msgstr "Aucun lien trouvé pour l'instant"
+
+#: /apps-dev/talk_browser/specialVueFakeDummyForL10nScript.js:799
+msgid "Type a URL into this conversation to see it here"
+msgstr "Saisissez une URL dans cette conversation pour la voir ici"
+
+#: /apps-dev/talk_browser/specialVueFakeDummyForL10nScript.js:872
+msgid "{count} times shared"
+msgstr "Partagé {count} fois"
+
+#: /apps-dev/talk_browser/specialVueFakeDummyForL10nScript.js:874
+msgid "Scanning message history for links…"
+msgstr "Analyse de l'historique des messages pour trouver des liens…"
+
+#: /apps-dev/talk_browser/specialVueFakeDummyForL10nScript.js:878
+msgid "Scanning more history…"
+msgstr "Analyse de l'historique supplémentaire…"
+
+#: /apps-dev/talk_browser/specialVueFakeDummyForL10nScript.js:880
+msgid "Scan more history"
+msgstr "Analyser davantage d'historique"
+
+#: /apps-dev/talk_browser/specialVueFakeDummyForL10nScript.js:940
+msgid "No images or videos yet"
+msgstr "Aucune image ni vidéo pour l'instant"
+
+#: /apps-dev/talk_browser/specialVueFakeDummyForL10nScript.js:946
+msgid "Share an image or video in this conversation to see it here"
+msgstr "Partagez une image ou une vidéo dans cette conversation pour la voir ici"
+
+#: /apps-dev/talk_browser/specialVueFakeDummyForL10nScript.js:1041
+msgid "Open {name} in lightbox"
+msgstr "Ouvrir {name} en visionneuse"
+
+#: /apps-dev/talk_browser/specialVueFakeDummyForL10nScript.js:1043
+msgid "Loading media…"
+msgstr "Chargement des médias…"
+
+#: /apps-dev/talk_browser/specialVueFakeDummyForL10nScript.js:1045
+msgid "Loading more media…"
+msgstr "Chargement de médias supplémentaires…"
+
+#: /apps-dev/talk_browser/specialVueFakeDummyForL10nScript.js:1049
+msgid "Previous"
+msgstr "Précédent"
+
+#: /apps-dev/talk_browser/specialVueFakeDummyForL10nScript.js:1051
+msgid "Next"
+msgstr "Suivant"
+
+#: /apps-dev/talk_browser/specialVueFakeDummyForL10nScript.js:1053
+msgid "Open in Files"
+msgstr "Ouvrir dans Fichiers"
+
+#: /apps-dev/talk_browser/specialVueFakeDummyForL10nScript.js:1121
+msgid "Loading overview…"
+msgstr "Chargement de l'aperçu…"
+
+#: /apps-dev/talk_browser/specialVueFakeDummyForL10nScript.js:1123
+msgid "Could not load overview"
+msgstr "Impossible de charger l'aperçu"
+
+#: /apps-dev/talk_browser/specialVueFakeDummyForL10nScript.js:1125
+msgid ""
+"There was a problem loading the overview. Please try selecting the "
+"conversation again."
+msgstr ""
+"Un problème est survenu lors du chargement de l'aperçu. Essayez de "
+"sélectionner à nouveau la conversation."
+
+#: /apps-dev/talk_browser/specialVueFakeDummyForL10nScript.js:1127
+msgid "No shared content yet"
+msgstr "Aucun contenu partagé pour l'instant"
+
+#: /apps-dev/talk_browser/specialVueFakeDummyForL10nScript.js:1129
+msgid ""
+"Share files, images, audio, or locations in this conversation to see them "
+"here. Plain links appear in the Links tab."
+msgstr ""
+"Partagez des fichiers, images, audio ou localisations dans cette conversation "
+"pour les voir ici. Les liens simples apparaissent dans l'onglet Liens."
+
+#: /apps-dev/talk_browser/specialVueFakeDummyForL10nScript.js:1133
+msgid "See all"
+msgstr "Voir tout"
+
+#: /apps-dev/talk_browser/specialVueFakeDummyForL10nScript.js:1135
+msgid "Open {name} in media tab"
+msgstr "Ouvrir {name} dans l'onglet Médias"
+
+#: /apps-dev/talk_browser/specialVueFakeDummyForL10nScript.js:1131
+msgid "See all {section}"
+msgstr "Voir tout : {section}"
+
+#: /apps-dev/talk_browser/src/l10n-strings.js:17
+msgid "Overview"
+msgstr "Aperçu"
+
+#: /apps-dev/talk_browser/src/l10n-strings.js:18
+msgid "Images & Video"
+msgstr "Images & Vidéo"
+
+#: /apps-dev/talk_browser/src/l10n-strings.js:19
+msgid "Files"
+msgstr "Fichiers"
+
+#: /apps-dev/talk_browser/src/l10n-strings.js:20
+msgid "Audio"
+msgstr "Audio"
+
+#: /apps-dev/talk_browser/src/l10n-strings.js:21
+msgid "Voice notes"
+msgstr "Notes vocales"
+
+#: /apps-dev/talk_browser/src/l10n-strings.js:22
+msgid "Links"
+msgstr "Liens"
+
+#: /apps-dev/talk_browser/src/l10n-strings.js:23
+msgid "Locations"
+msgstr "Localisations"
+
+#: /apps-dev/talk_browser/src/l10n-strings.js:24
+msgid "Other"
+msgstr "Autre"
+
+#: /apps-dev/talk_browser/src/l10n-strings.js:27
+msgid "Newest first"
+msgstr "Plus récent d'abord"
+
+#: /apps-dev/talk_browser/src/l10n-strings.js:28
+msgid "Oldest first"
+msgstr "Plus ancien d'abord"
+
+#: /apps-dev/talk_browser/src/l10n-strings.js:29
+msgid "Name A→Z"
+msgstr "Nom A→Z"
+
+#: /apps-dev/talk_browser/src/l10n-strings.js:30
+msgid "Name Z→A"
+msgstr "Nom Z→A"
+
+#: /apps-dev/talk_browser/src/l10n-strings.js:31
+msgid "Largest first"
+msgstr "Plus grand d'abord"
+
+#: /apps-dev/talk_browser/src/l10n-strings.js:32
+msgid "Smallest first"
+msgstr "Plus petit d'abord"
+
+#: /apps-dev/talk_browser/src/l10n-strings.js:33
+msgid "Most shared"
+msgstr "Plus partagé"
+
+#: /apps-dev/talk_browser/src/l10n-strings.js:34
+msgid "Least shared"
+msgstr "Moins partagé"
