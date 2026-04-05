@@ -5,11 +5,36 @@
 			<template #list>
 				<ConversationPicker
 					v-model="selectedToken"
-					:conversations="conversations"
+					:conversations="filteredConversations"
 					:loading="conversationsLoading"
 				/>
 			</template>
+			<template #footer>
+				<div class="app__settings-trigger">
+					<NcButton alignment="start"
+						variant="tertiary"
+						wide
+						@click="showSettingsModal = true">
+						<template #icon>
+							<span class="icon-settings-dark" aria-hidden="true" />
+						</template>
+						{{ t('talk_browser', 'Settings') }}
+					</NcButton>
+				</div>
+			</template>
 		</NcAppNavigation>
+
+		<!-- Settings modal -->
+		<NcDialog :open="showSettingsModal"
+			:name="t('talk_browser', 'Settings')"
+			size="small"
+			:close-on-click-outside="true"
+			@update:open="showSettingsModal = $event">
+			<SettingsPanel
+				:hide-group-conversations="hideGroupConversations"
+				@update:hide-group-conversations="onUpdateHideGroupConversations"
+			/>
+		</NcDialog>
 
 		<!-- Main content area -->
 		<NcAppContent>
@@ -172,6 +197,7 @@ import {
 	NcAppNavigation,
 	NcButton,
 	NcContent,
+	NcDialog,
 	NcEmptyContent,
 	NcLoadingIcon,
 } from '@nextcloud/vue'
@@ -181,6 +207,7 @@ import { generateUrl } from '@nextcloud/router'
 
 import ConversationPicker from './components/ConversationPicker.vue'
 import ContentTabs from './components/ContentTabs.vue'
+import SettingsPanel from './components/SettingsPanel.vue'
 import OverviewPanel from './components/OverviewPanel.vue'
 import MediaGallery from './components/MediaGallery.vue'
 import FileList from './components/FileList.vue'
@@ -191,7 +218,7 @@ import GenericList from './components/GenericList.vue'
 import { useConversations } from './composables/useConversations.js'
 import { useSharedItems } from './composables/useSharedItems.js'
 import { fetchShareOverview } from './api/talk.js'
-import { TABS } from './constants.js'
+import { TABS, CONVERSATION_TYPE } from './constants.js'
 
 export default {
 	name: 'App',
@@ -201,10 +228,12 @@ export default {
 		NcAppNavigation,
 		NcButton,
 		NcContent,
+		NcDialog,
 		NcEmptyContent,
 		NcLoadingIcon,
 		ConversationPicker,
 		ContentTabs,
+		SettingsPanel,
 		OverviewPanel,
 		MediaGallery,
 		FileList,
@@ -247,6 +276,37 @@ export default {
 			selectedConversation,
 			load: loadConversations,
 		} = useConversations()
+
+		// ── Settings: hide group conversations ───────────────────────────────
+		const LS_KEY = 'talk_browser.hideGroupConversations'
+
+		function readHideGroupPref() {
+			try {
+				return localStorage.getItem(LS_KEY) === 'true'
+			} catch (e) {
+				return false
+			}
+		}
+
+		const hideGroupConversations = ref(readHideGroupPref())
+
+		const showSettingsModal = ref(false)
+
+		function onUpdateHideGroupConversations(value) {
+			hideGroupConversations.value = value
+			try {
+				localStorage.setItem(LS_KEY, String(value))
+			} catch (e) {
+				// ignore storage errors
+			}
+		}
+
+		const filteredConversations = computed(() => {
+			if (!hideGroupConversations.value) return conversations.value
+			return conversations.value.filter(
+				c => c.type !== CONVERSATION_TYPE.GROUP && c.type !== CONVERSATION_TYPE.PUBLIC,
+			)
+		})
 
 		// ── Active tab ───────────────────────────────────────────────────────
 		const activeTab = ref('overview')
@@ -375,11 +435,16 @@ export default {
 		return {
 			// conversations
 			conversations,
+			filteredConversations,
 			conversationsLoading,
 			conversationsError,
 			selectedToken,
 			selectedConversation,
 			loadConversations,
+			// settings
+			hideGroupConversations,
+			showSettingsModal,
+			onUpdateHideGroupConversations,
 			// tabs
 			activeTab,
 			highlightId,
@@ -438,5 +503,10 @@ export default {
 @keyframes tb-highlight-fade {
 	0%   { outline-color: var(--color-primary-element); }
 	100% { outline-color: transparent; }
+}
+
+.app__settings-trigger {
+	padding: 4px 8px;
+	border-top: 1px solid var(--color-border);
 }
 </style>

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace OCA\TalkContentBrowser\Controller;
 
 use OCA\TalkContentBrowser\AppInfo\Application;
+use OCP\App\IAppManager;
 use OCP\AppFramework\Controller;
 use OCP\AppFramework\Http\Attribute\NoAdminRequired;
 use OCP\AppFramework\Http\Attribute\NoCSRFRequired;
@@ -23,6 +24,7 @@ class PageController extends Controller {
         IRequest $request,
         private readonly IInitialState $initialState,
         private readonly IUserSession $userSession,
+        private readonly IAppManager $appManager,
     ) {
         parent::__construct(Application::APP_ID, $request);
     }
@@ -56,6 +58,10 @@ class PageController extends Controller {
 
         // Pass the user ID to the Vue app for avatar lookups
         $this->initialState->provideInitialState('user-id', $user?->getUID() ?? '');
+
+        // Pass app metadata for the About section in settings
+        $this->initialState->provideInitialState('app-version', $this->appManager->getAppVersion(Application::APP_ID));
+        $this->initialState->provideInitialState('app-licence', 'AGPL-3.0-or-later');
 
         return new TemplateResponse(Application::APP_ID, 'main');
     }
