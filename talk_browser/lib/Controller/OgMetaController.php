@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace OCA\TalkContentBrowser\Controller;
 
 use OCA\TalkContentBrowser\AppInfo\Application;
+use OCA\TalkContentBrowser\Service\UrlValidator;
 use OCP\AppFramework\Controller;
 use OCP\AppFramework\Http;
 use OCP\AppFramework\Http\Attribute\NoAdminRequired;
@@ -39,13 +40,16 @@ class OgMetaController extends Controller {
     private const MAX_HTML_BYTES  = 2 * 1024 * 1024; // 2 MiB — YouTube injects OG tags ~600 KiB in
 
     private IAppData $appData;
+    private UrlValidator $urlValidator;
 
     public function __construct(
         IRequest $request,
         IAppDataFactory $appDataFactory,
+        UrlValidator $urlValidator,
     ) {
         parent::__construct(Application::APP_ID, $request);
         $this->appData = $appDataFactory->get(Application::APP_ID);
+        $this->urlValidator = $urlValidator;
     }
 
     #[NoCSRFRequired]
@@ -63,6 +67,11 @@ class OgMetaController extends Controller {
             !isset($parsed['scheme'], $parsed['host'])
             || !in_array(strtolower($parsed['scheme']), ['http', 'https'], true)
         ) {
+            return $this->emptyMeta();
+        }
+
+        // --- SSRF protection: reject private/reserved IP targets ---
+        if (!$this->urlValidator->validateExternalUrl($rawUrl)) {
             return $this->emptyMeta();
         }
 
@@ -170,6 +179,11 @@ class OgMetaController extends Controller {
         $userAgent = $isTwitter
             ? 'Mozilla/5.0 (compatible; TalkBrowserBot/1.0)'  // fxtwitter needs a non-browser UA
             : 'Mozilla/5.0 (X11; Linux x86_64; rv:128.0) Gecko/20100101 Firefox/128.0';
+
+        // SSRF protection: validate the final URL (post-rewrite) before fetching.
+        if (!$this->urlValidator->validateExternalUrl($fetchUrl)) {
+            return null;
+        }
 
         $ctx = stream_context_create([
             'http' => [

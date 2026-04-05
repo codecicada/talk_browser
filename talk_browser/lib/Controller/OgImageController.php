@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace OCA\TalkContentBrowser\Controller;
 
 use OCA\TalkContentBrowser\AppInfo\Application;
+use OCA\TalkContentBrowser\Service\UrlValidator;
 use OCP\AppFramework\Controller;
 use OCP\AppFramework\Http;
 use OCP\AppFramework\Http\Attribute\NoAdminRequired;
@@ -40,14 +41,17 @@ class OgImageController extends Controller {
     private const MAX_IMAGE_BYTES = 5 * 1024 * 1024; // 5 MiB
 
     private IAppData $appData;
+    private UrlValidator $urlValidator;
 
     public function __construct(
         IRequest $request,
         IAppDataFactory $appDataFactory,
+        UrlValidator $urlValidator,
     ) {
         parent::__construct(Application::APP_ID, $request);
         // Get an app-scoped IAppData instance for talk_browser
         $this->appData = $appDataFactory->get(Application::APP_ID);
+        $this->urlValidator = $urlValidator;
     }
 
     #[NoCSRFRequired]
@@ -65,6 +69,11 @@ class OgImageController extends Controller {
             !isset($parsed['scheme'], $parsed['host'])
             || !in_array(strtolower($parsed['scheme']), ['http', 'https'], true)
         ) {
+            return $this->emptyResponse();
+        }
+
+        // --- SSRF protection: reject private/reserved IP targets ---
+        if (!$this->urlValidator->validateExternalUrl($rawUrl)) {
             return $this->emptyResponse();
         }
 
@@ -191,6 +200,11 @@ class OgImageController extends Controller {
             ? 'Mozilla/5.0 (compatible; TalkBrowserBot/1.0)'
             : 'Mozilla/5.0 (X11; Linux x86_64; rv:128.0) Gecko/20100101 Firefox/128.0';
 
+        // SSRF protection: validate the final URL (post-rewrite) before fetching.
+        if (!$this->urlValidator->validateExternalUrl($fetchUrl)) {
+            return null;
+        }
+
         $ctx = stream_context_create([
             'http' => [
                 'method'          => 'GET',
@@ -222,6 +236,11 @@ class OgImageController extends Controller {
      * Returns [bytes, mime] or [null, null].
      */
     private function fetchImage(string $url): array {
+        // SSRF protection: validate the OG image URL before fetching.
+        if (!$this->urlValidator->validateExternalUrl($url)) {
+            return [null, null];
+        }
+
         $ctx = stream_context_create([
             'http' => [
                 'method'          => 'GET',
