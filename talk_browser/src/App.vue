@@ -38,6 +38,7 @@
 
 		<!-- Main content area -->
 		<NcAppContent>
+			<ErrorBoundary>
 			<!-- Loading conversations -->
 			<div v-if="conversationsLoading" class="app__loading" role="status" aria-live="polite">
 				<NcLoadingIcon :size="48" aria-hidden="true" />
@@ -190,6 +191,7 @@
 					</template>
 				</ContentTabs>
 			</template>
+			</ErrorBoundary>
 		</NcAppContent>
 	</NcContent>
 </template>
@@ -210,6 +212,7 @@ import { generateUrl } from '@nextcloud/router'
 
 import ConversationPicker from './components/ConversationPicker.vue'
 import ContentTabs from './components/ContentTabs.vue'
+import ErrorBoundary from './components/ErrorBoundary.vue'
 import SettingsPanel from './components/SettingsPanel.vue'
 import OverviewPanel from './components/OverviewPanel.vue'
 import MediaGallery from './components/MediaGallery.vue'
@@ -236,6 +239,7 @@ export default {
 		NcLoadingIcon,
 		ConversationPicker,
 		ContentTabs,
+		ErrorBoundary,
 		SettingsPanel,
 		OverviewPanel,
 		MediaGallery,
