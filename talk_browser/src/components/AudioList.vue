@@ -80,36 +80,18 @@
 import { NcButton, NcEmptyContent, NcLoadingIcon } from '@nextcloud/vue'
 import { translate as t } from '@nextcloud/l10n'
 import { safeUrl, safeWebdavUrl } from '../utils/url.js'
-import { sortItems } from '../utils/sort.js'
+import useListBehavior from '../composables/useListBehavior.js'
 
 export default {
 	name: 'AudioList',
 
 	components: { NcButton, NcEmptyContent, NcLoadingIcon },
 
+	mixins: [useListBehavior],
+
 	props: {
-		items: { type: Array, default: () => [] },
-		loading: { type: Boolean, default: false },
-		loadingMore: { type: Boolean, default: false },
-		hasMore: { type: Boolean, default: false },
-		search: { type: String, default: '' },
-		sort: { type: String, default: 'date-desc' },
 		// true = voice notes (voice type), false = audio files (audio type)
 		isVoice: { type: Boolean, default: false },
-		highlightId: { type: Number, default: null },
-	},
-
-	watch: {
-		highlightId(id) {
-			if (!id) return
-			this.$nextTick(() => this.scrollToItem(id))
-		},
-	},
-
-	mounted() {
-		if (this.highlightId) {
-			this.$nextTick(() => this.scrollToItem(this.highlightId))
-		}
 	},
 
 	data() {
@@ -119,56 +101,35 @@ export default {
 	},
 
 	computed: {
-		filtered() {
-			let result = this.items
-			if (this.search) {
-				const q = this.search.toLowerCase()
-				result = result.filter(item =>
-					this.fileName(item).toLowerCase().includes(q)
-					|| (item.actorDisplayName ?? '').toLowerCase().includes(q),
-				)
+		listBehaviorOptions() {
+			const isVoice = this.isVoice
+			return {
+				highlightClass: 'audio-list__item--highlight',
+				getItemName(item) {
+					return item.messageParameters?.file?.name ?? 'Audio'
+				},
+				getSearchFields(item) {
+					const name = item.messageParameters?.file?.name ?? 'Audio'
+					return [name, item.actorDisplayName ?? '']
+				},
+				emptyNoun: isVoice ? 'voice notes' : 'audio files',
+				emptyAction: isVoice
+					? t('talk_browser', 'Record a voice note in Talk to see it here')
+					: t('talk_browser', 'Share an audio file in this conversation to see it here'),
 			}
-			return sortItems(result, this.sort, item => this.fileName(item))
-		},
-
-		emptyTitle() {
-			if (this.search) {
-				return t('talk_browser', 'No results for "{search}"', { search: this.search })
-			}
-			return this.isVoice
-				? t('talk_browser', 'No voice notes yet')
-				: t('talk_browser', 'No audio files yet')
-		},
-
-		emptyDescription() {
-			if (this.search) {
-				return t('talk_browser', 'Try a different search term')
-			}
-			return this.isVoice
-				? t('talk_browser', 'Record a voice note in Talk to see it here')
-				: t('talk_browser', 'Share an audio file in this conversation to see it here')
 		},
 	},
 
 	methods: {
 		t,
 
-		scrollToItem(id) {
-			const safeId = parseInt(id, 10)
-			if (!Number.isFinite(safeId)) return
-			const el = this.$el.querySelector(`[data-id="${safeId}"]`)
-			if (!el) return
-			el.scrollIntoView({ behavior: 'smooth', block: 'center' })
-			el.classList.add('audio-list__item--highlight')
-			setTimeout(() => el.classList.remove('audio-list__item--highlight'), 2000)
+		/** Alias for template compatibility */
+		fileName(item) {
+			return this.getItemName(item)
 		},
 
 		markBroken(id) {
 			this.$set(this.brokenSrc, id, true)
-		},
-
-		fileName(item) {
-			return item.messageParameters?.file?.name ?? 'Audio'
 		},
 
 		fileLink(item) {
@@ -178,29 +139,11 @@ export default {
 		audioSrc(item) {
 			return safeWebdavUrl(item.messageParameters?.file?.path)
 		},
-
-		formatDate(timestamp) {
-			return new Date(timestamp * 1000).toLocaleDateString(undefined, {
-				year: 'numeric', month: 'short', day: 'numeric',
-			})
-		},
 	},
 }
 </script>
 
 <style scoped>
-.sr-only {
-	position: absolute;
-	width: 1px;
-	height: 1px;
-	padding: 0;
-	margin: -1px;
-	overflow: hidden;
-	clip: rect(0, 0, 0, 0);
-	white-space: nowrap;
-	border: 0;
-}
-
 .audio-list__items {
 	list-style: none;
 	margin: 0;

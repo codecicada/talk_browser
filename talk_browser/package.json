@@ -1,6 +1,6 @@
 {
   "name": "talk_browser",
-  "version": "1.0.4",
+  "version": "1.0.5",
   "description": "Browse Nextcloud Talk conversation content by type",
   "private": true,
   "scripts": {

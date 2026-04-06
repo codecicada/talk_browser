@@ -71,78 +71,36 @@
 import { NcButton, NcEmptyContent, NcLoadingIcon } from '@nextcloud/vue'
 import { translate as t } from '@nextcloud/l10n'
 import { safeUrl } from '../utils/url.js'
-import { sortItems } from '../utils/sort.js'
+import useListBehavior from '../composables/useListBehavior.js'
 
 export default {
 	name: 'FileList',
 
 	components: { NcButton, NcEmptyContent, NcLoadingIcon },
 
-	props: {
-		items: { type: Array, default: () => [] },
-		loading: { type: Boolean, default: false },
-		loadingMore: { type: Boolean, default: false },
-		hasMore: { type: Boolean, default: false },
-		search: { type: String, default: '' },
-		sort: { type: String, default: 'date-desc' },
-		highlightId: { type: Number, default: null },
-	},
+	mixins: [useListBehavior],
 
-	watch: {
-		highlightId(id) {
-			if (!id) return
-			this.$nextTick(() => this.scrollToItem(id))
-		},
-	},
-
-	mounted() {
-		if (this.highlightId) {
-			this.$nextTick(() => this.scrollToItem(this.highlightId))
+	data() {
+		return {
+			listBehaviorOptions: {
+				highlightClass: 'file-list__item--highlight',
+				getItemName(item) {
+					return item.messageParameters?.file?.name
+						?? item.messageParameters?.object?.name
+						?? 'Unknown file'
+				},
+				emptyNoun: 'files',
+				emptyAction: t('talk_browser', 'Share a file in this conversation to see it here'),
+			},
 		}
-	},
-
-	computed: {
-		filtered() {
-			let result = this.items
-			if (this.search) {
-				const q = this.search.toLowerCase()
-				result = result.filter(item =>
-					this.fileName(item).toLowerCase().includes(q),
-				)
-			}
-			return sortItems(result, this.sort, item => this.fileName(item))
-		},
-
-		emptyTitle() {
-			return this.search
-				? t('talk_browser', 'No results for "{search}"', { search: this.search })
-				: t('talk_browser', 'No files yet')
-		},
-
-		emptyDescription() {
-			return this.search
-				? t('talk_browser', 'Try a different search term')
-				: t('talk_browser', 'Share a file in this conversation to see it here')
-		},
 	},
 
 	methods: {
 		t,
 
-		scrollToItem(id) {
-			const safeId = parseInt(id, 10)
-			if (!Number.isFinite(safeId)) return
-			const el = this.$el.querySelector(`[data-id="${safeId}"]`)
-			if (!el) return
-			el.scrollIntoView({ behavior: 'smooth', block: 'center' })
-			el.classList.add('file-list__item--highlight')
-			setTimeout(() => el.classList.remove('file-list__item--highlight'), 2000)
-		},
-
+		/** Alias for template compatibility */
 		fileName(item) {
-			return item.messageParameters?.file?.name
-				?? item.messageParameters?.object?.name
-				?? 'Unknown file'
+			return this.getItemName(item)
 		},
 
 		mimeIconUrl(item) {
@@ -150,7 +108,7 @@ export default {
 			// OC.MimeType.getIconUrl is provided by Nextcloud core globally
 			// and returns a themed SVG URL for any MIME type.
 			return window.OC?.MimeType?.getIconUrl(mime)
-				?? `/core/img/filetypes/file.svg`
+				?? '/core/img/filetypes/file.svg'
 		},
 
 		formatSize(bytes) {
@@ -160,12 +118,6 @@ export default {
 			const mb = kb / 1024
 			if (mb < 1024) return `${mb.toFixed(1)} MB`
 			return `${(mb / 1024).toFixed(1)} GB`
-		},
-
-		formatDate(timestamp) {
-			return new Date(timestamp * 1000).toLocaleDateString(undefined, {
-				year: 'numeric', month: 'short', day: 'numeric',
-			})
 		},
 
 		openItem(item) {
@@ -185,18 +137,6 @@ export default {
 </script>
 
 <style scoped>
-.sr-only {
-	position: absolute;
-	width: 1px;
-	height: 1px;
-	padding: 0;
-	margin: -1px;
-	overflow: hidden;
-	clip: rect(0, 0, 0, 0);
-	white-space: nowrap;
-	border: 0;
-}
-
 .file-list__items {
 	list-style: none;
 	margin: 0;

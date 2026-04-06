@@ -138,43 +138,28 @@ import { NcButton, NcEmptyContent, NcLoadingIcon, NcModal } from '@nextcloud/vue
 import { getRootUrl } from '@nextcloud/router'
 import { translate as t } from '@nextcloud/l10n'
 import { safeUrl, safeWebdavUrl, safeFileId } from '../utils/url.js'
-import { sortItems } from '../utils/sort.js'
+import useListBehavior from '../composables/useListBehavior.js'
 
 export default {
 	name: 'MediaGallery',
 
 	components: { NcButton, NcEmptyContent, NcLoadingIcon, NcModal },
 
-	props: {
-		items: { type: Array, default: () => [] },
-		loading: { type: Boolean, default: false },
-		loadingMore: { type: Boolean, default: false },
-		hasMore: { type: Boolean, default: false },
-		search: { type: String, default: '' },
-		sort: { type: String, default: 'date-desc' },
-		highlightId: { type: Number, default: null },
-	},
-
-	watch: {
-		highlightId(id) {
-			if (!id) return
-			this.$nextTick(() => this.scrollToItem(id))
-		},
-	},
-
-	mounted() {
-		if (this.highlightId) {
-			this.$nextTick(() => this.scrollToItem(this.highlightId))
-		}
-	},
-
-	beforeDestroy() {
-		window.removeEventListener('keydown', this._onKeydown)
-	},
+	mixins: [useListBehavior],
 
 	data() {
 		return {
 			lightboxIndex: null,
+			listBehaviorOptions: {
+				highlightClass: 'media-gallery__item--highlight',
+				getItemName(item) {
+					return item.messageParameters?.file?.name
+						?? item.messageParameters?.object?.name
+						?? 'Unknown'
+				},
+				emptyNoun: 'images or videos',
+				emptyAction: t('talk_browser', 'Share an image or video in this conversation to see it here'),
+			},
 		}
 	},
 
@@ -182,39 +167,19 @@ export default {
 		lightboxItem() {
 			return this.lightboxIndex !== null ? this.filtered[this.lightboxIndex] ?? null : null
 		},
+	},
 
-		filtered() {
-			let result = this.items
-			if (this.search) {
-				const q = this.search.toLowerCase()
-				result = result.filter(item =>
-					this.fileName(item).toLowerCase().includes(q),
-				)
-			}
-			return sortItems(result, this.sort, item => this.fileName(item))
-		},
-
-		emptyTitle() {
-			return this.search
-				? t('talk_browser', 'No results for "{search}"', { search: this.search })
-				: t('talk_browser', 'No images or videos yet')
-		},
-
-		emptyDescription() {
-			return this.search
-				? t('talk_browser', 'Try a different search term')
-				: t('talk_browser', 'Share an image or video in this conversation to see it here')
-		},
+	beforeDestroy() {
+		window.removeEventListener('keydown', this._onKeydown)
 	},
 
 	methods: {
 		t,
 		safeUrl,
 
+		/** Alias for template compatibility */
 		fileName(item) {
-			return item.messageParameters?.file?.name
-				?? item.messageParameters?.object?.name
-				?? 'Unknown'
+			return this.getItemName(item)
 		},
 
 		isImage(item) {
@@ -239,22 +204,6 @@ export default {
 			}
 			// Videos: stream directly via WebDAV
 			return safeWebdavUrl(file.path)
-		},
-
-		formatDate(timestamp) {
-			return new Date(timestamp * 1000).toLocaleDateString(undefined, {
-				year: 'numeric', month: 'short', day: 'numeric',
-			})
-		},
-
-		scrollToItem(id) {
-			const safeId = parseInt(id, 10)
-			if (!Number.isFinite(safeId)) return
-			const el = this.$el.querySelector(`[data-id="${safeId}"]`)
-			if (!el) return
-			el.scrollIntoView({ behavior: 'smooth', block: 'center' })
-			el.classList.add('media-gallery__item--highlight')
-			setTimeout(() => el.classList.remove('media-gallery__item--highlight'), 2000)
 		},
 
 		openLightbox(item) {
@@ -299,18 +248,6 @@ export default {
 </script>
 
 <style scoped>
-.sr-only {
-	position: absolute;
-	width: 1px;
-	height: 1px;
-	padding: 0;
-	margin: -1px;
-	overflow: hidden;
-	clip: rect(0, 0, 0, 0);
-	white-space: nowrap;
-	border: 0;
-}
-
 .media-gallery__thumb-wrap {
 	position: relative;
 	width: 100%;

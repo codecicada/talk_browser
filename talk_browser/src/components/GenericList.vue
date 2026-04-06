@@ -74,48 +74,37 @@
 import { NcButton, NcEmptyContent, NcLoadingIcon } from '@nextcloud/vue'
 import { translate as t } from '@nextcloud/l10n'
 import { safeUrl } from '../utils/url.js'
-import { sortItems } from '../utils/sort.js'
+import useListBehavior from '../composables/useListBehavior.js'
 
 export default {
 	name: 'GenericList',
 
 	components: { NcButton, NcEmptyContent, NcLoadingIcon },
 
+	mixins: [useListBehavior],
+
 	props: {
-		items: { type: Array, default: () => [] },
-		loading: { type: Boolean, default: false },
-		loadingMore: { type: Boolean, default: false },
-		hasMore: { type: Boolean, default: false },
-		search: { type: String, default: '' },
-		sort: { type: String, default: 'date-desc' },
 		objectType: { type: String, default: 'other' },
-		highlightId: { type: Number, default: null },
-	},
-
-	watch: {
-		highlightId(id) {
-			if (!id) return
-			this.$nextTick(() => this.scrollToItem(id))
-		},
-	},
-
-	mounted() {
-		if (this.highlightId) {
-			this.$nextTick(() => this.scrollToItem(this.highlightId))
-		}
 	},
 
 	computed: {
-		filtered() {
-			let result = this.items
-			if (this.search) {
-				const q = this.search.toLowerCase()
-				result = result.filter(item =>
-					this.itemName(item).toLowerCase().includes(q)
-					|| (item.actorDisplayName ?? '').toLowerCase().includes(q),
-				)
+		listBehaviorOptions() {
+			return {
+				highlightClass: 'generic-list__item--highlight',
+				getItemName(item) {
+					return item.messageParameters?.object?.name
+						?? item.messageParameters?.file?.name
+						?? 'Item'
+				},
+				getSearchFields(item) {
+					const name = item.messageParameters?.object?.name
+						?? item.messageParameters?.file?.name
+						?? 'Item'
+					return [name, item.actorDisplayName ?? '']
+				},
+				emptyNoun: this.objectType,
+				emptyAction: t('talk_browser', 'Share content in this conversation to see it here'),
 			}
-			return sortItems(result, this.sort, item => this.itemName(item))
 		},
 
 		emptyIcon() {
@@ -123,6 +112,7 @@ export default {
 			return 'icon-more'
 		},
 
+		// Override mixin's emptyTitle for objectType-specific messages
 		emptyTitle() {
 			if (this.search) {
 				return t('talk_browser', 'No results for "{search}"', { search: this.search })
@@ -132,21 +122,14 @@ export default {
 			if (this.objectType === 'recording') return t('talk_browser', 'No recordings yet')
 			return t('talk_browser', 'Nothing here yet')
 		},
-
-		emptyDescription() {
-			return this.search
-				? t('talk_browser', 'Try a different search term')
-				: t('talk_browser', 'Share content in this conversation to see it here')
-		},
 	},
 
 	methods: {
 		t,
 
+		/** Alias for template compatibility */
 		itemName(item) {
-			return item.messageParameters?.object?.name
-				?? item.messageParameters?.file?.name
-				?? 'Item'
+			return this.getItemName(item)
 		},
 
 		itemDescription(item) {
@@ -166,22 +149,6 @@ export default {
 			case 'deck-card': return 'icon-deck'
 			default: return 'icon-more'
 			}
-		},
-
-		formatDate(timestamp) {
-			return new Date(timestamp * 1000).toLocaleDateString(undefined, {
-				year: 'numeric', month: 'short', day: 'numeric',
-			})
-		},
-
-		scrollToItem(id) {
-			const safeId = parseInt(id, 10)
-			if (!Number.isFinite(safeId)) return
-			const el = this.$el.querySelector(`[data-id="${safeId}"]`)
-			if (!el) return
-			el.scrollIntoView({ behavior: 'smooth', block: 'center' })
-			el.classList.add('generic-list__item--highlight')
-			setTimeout(() => el.classList.remove('generic-list__item--highlight'), 2000)
 		},
 
 		mapUrl(item) {
@@ -205,18 +172,6 @@ export default {
 </script>
 
 <style scoped>
-.sr-only {
-	position: absolute;
-	width: 1px;
-	height: 1px;
-	padding: 0;
-	margin: -1px;
-	overflow: hidden;
-	clip: rect(0, 0, 0, 0);
-	white-space: nowrap;
-	border: 0;
-}
-
 .generic-list__items {
 	list-style: none;
 	margin: 0;

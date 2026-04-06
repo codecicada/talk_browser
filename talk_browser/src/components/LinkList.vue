@@ -94,20 +94,14 @@ import { translate as t } from '@nextcloud/l10n'
 import { generateUrl } from '@nextcloud/router'
 import { safeUrl } from '../utils/url.js'
 import { fetchOgMeta } from '../api/talk.js'
-import { sortItems } from '../utils/sort.js'
+import useListBehavior from '../composables/useListBehavior.js'
 
 export default {
 	name: 'LinkList',
 
 	components: { NcEmptyContent, NcLoadingIcon },
 
-	props: {
-		items: { type: Array, default: () => [] },
-		loading: { type: Boolean, default: false },
-		search: { type: String, default: '' },
-		sort: { type: String, default: 'date-desc' },
-		highlightId: { type: Number, default: null },
-	},
+	mixins: [useListBehavior],
 
 	data() {
 		return {
@@ -120,49 +114,30 @@ export default {
 		}
 	},
 
-	watch: {
-		highlightId(id) {
-			if (!id) return
-			this.$nextTick(() => this.scrollToItem(id))
+	computed: {
+		listBehaviorOptions() {
+			return {
+				highlightClass: 'link-list__item--highlight',
+				getItemName: (item) => this.resolvedTitle(item),
+				getSearchFields: (item) => [
+					item.url,
+					this.resolvedTitle(item),
+					this.resolvedDescription(item) || '',
+				],
+				emptyNoun: 'links found',
+				emptyAction: t('talk_browser', 'Type a URL into this conversation to see it here'),
+			}
 		},
+	},
 
+	watch: {
 		filtered(newItems) {
 			this.prefetchOgMeta(newItems)
 		},
 	},
 
 	mounted() {
-		if (this.highlightId) {
-			this.$nextTick(() => this.scrollToItem(this.highlightId))
-		}
 		this.prefetchOgMeta(this.filtered)
-	},
-
-	computed: {
-		filtered() {
-			let result = this.items
-			if (this.search) {
-				const q = this.search.toLowerCase()
-				result = result.filter(item =>
-					item.url.toLowerCase().includes(q)
-					|| this.resolvedTitle(item).toLowerCase().includes(q)
-					|| (this.resolvedDescription(item) || '').toLowerCase().includes(q),
-				)
-			}
-			return sortItems(result, this.sort, item => this.resolvedTitle(item))
-		},
-
-		emptyTitle() {
-			return this.search
-				? t('talk_browser', 'No results for "{search}"', { search: this.search })
-				: t('talk_browser', 'No links found yet')
-		},
-
-		emptyDescription() {
-			return this.search
-				? t('talk_browser', 'Try a different search term')
-				: t('talk_browser', 'Type a URL into this conversation to see it here')
-		},
 	},
 
 	methods: {
@@ -215,39 +190,11 @@ export default {
 		resolvedDescription(item) {
 			return this.ogMeta[item.url]?.description ?? null
 		},
-
-		scrollToItem(id) {
-			const safeId = parseInt(id, 10)
-			if (!Number.isFinite(safeId)) return
-			const el = this.$el.querySelector(`[data-id="${safeId}"]`)
-			if (!el) return
-			el.scrollIntoView({ behavior: 'smooth', block: 'center' })
-			el.classList.add('link-list__item--highlight')
-			setTimeout(() => el.classList.remove('link-list__item--highlight'), 2000)
-		},
-
-		formatDate(timestamp) {
-			return new Date(timestamp * 1000).toLocaleDateString(undefined, {
-				year: 'numeric', month: 'short', day: 'numeric',
-			})
-		},
 	},
 }
 </script>
 
 <style scoped>
-.sr-only {
-	position: absolute;
-	width: 1px;
-	height: 1px;
-	padding: 0;
-	margin: -1px;
-	overflow: hidden;
-	clip: rect(0, 0, 0, 0);
-	white-space: nowrap;
-	border: 0;
-}
-
 .link-list__items {
 	list-style: none;
 	margin: 0;
