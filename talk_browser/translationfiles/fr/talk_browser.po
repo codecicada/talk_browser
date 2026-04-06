@@ -72,6 +72,10 @@ msgstr ""
 "Un problème est survenu lors de la connexion à Nextcloud Talk. Vérifiez "
 "votre connexion et réessayez."
 
+#: /apps-dev/talk_browser/specialVueFakeDummyForL10nScript.js:212
+msgid "Settings"
+msgstr "Paramètres"
+
 #: /apps-dev/talk_browser/specialVueFakeDummyForL10nScript.js:213
 #: /apps-dev/talk_browser/specialVueFakeDummyForL10nScript.js:223
 msgid "Retry"
@@ -150,6 +154,30 @@ msgstr "Chargement de la suite…"
 msgid "Load more"
 msgstr "Charger plus"
 
+#: /apps-dev/talk_browser/specialVueFakeDummyForL10nScript.js:490
+msgid "View"
+msgstr "Vue"
+
+#: /apps-dev/talk_browser/specialVueFakeDummyForL10nScript.js:492
+msgid "Show group conversations"
+msgstr "Afficher les conversations de groupe"
+
+#: /apps-dev/talk_browser/specialVueFakeDummyForL10nScript.js:494
+msgid "About"
+msgstr "À propos"
+
+#: /apps-dev/talk_browser/specialVueFakeDummyForL10nScript.js:496
+msgid "Version"
+msgstr "Version"
+
+#: /apps-dev/talk_browser/specialVueFakeDummyForL10nScript.js:498
+msgid "Licence"
+msgstr "Licence"
+
+#: /apps-dev/talk_browser/specialVueFakeDummyForL10nScript.js:500
+msgid "View on GitHub"
+msgstr "Voir sur GitHub"
+
 #: /apps-dev/talk_browser/specialVueFakeDummyForL10nScript.js:372
 msgid "Search {type}"
 msgstr "Rechercher {type}"
@@ -158,6 +186,10 @@ msgstr "Rechercher {type}"
 #: /apps-dev/talk_browser/specialVueFakeDummyForL10nScript.js:462
 msgid "Search…"
 msgstr "Rechercher…"
+
+#: /apps-dev/talk_browser/specialVueFakeDummyForL10nScript.js:397
+msgid "Sort"
+msgstr "Trier"
 
 #: /apps-dev/talk_browser/specialVueFakeDummyForL10nScript.js:396
 msgid "Content types"
@@ -224,6 +256,14 @@ msgstr "Ouvrir {name}"
 msgid "Open on map"
 msgstr "Ouvrir sur la carte"
 
+#: /apps-dev/talk_browser/specialVueFakeDummyForL10nScript.js:230
+msgid "Something went wrong"
+msgstr "Une erreur est survenue"
+
+#: /apps-dev/talk_browser/specialVueFakeDummyForL10nScript.js:232
+msgid "An unexpected error occurred. You can try to recover by clicking Retry."
+msgstr "Une erreur inattendue est survenue. Vous pouvez tenter de récupérer en cliquant sur Réessayer."
+
 #: /apps-dev/talk_browser/specialVueFakeDummyForL10nScript.js:723
 #: /apps-dev/talk_browser/specialVueFakeDummyForL10nScript.js:876
 msgid "Loading…"
@@ -236,6 +276,14 @@ msgstr "Aucun lien trouvé pour l'instant"
 #: /apps-dev/talk_browser/specialVueFakeDummyForL10nScript.js:799
 msgid "Type a URL into this conversation to see it here"
 msgstr "Saisissez une URL dans cette conversation pour la voir ici"
+
+#: /apps-dev/talk_browser/specialVueFakeDummyForL10nScript.js:873
+msgid "Go to message"
+msgstr "Aller au message"
+
+#: /apps-dev/talk_browser/specialVueFakeDummyForL10nScript.js:875
+msgid "Open link in new tab"
+msgstr "Ouvrir le lien dans un nouvel onglet"
 
 #: /apps-dev/talk_browser/specialVueFakeDummyForL10nScript.js:872
 msgid "{count} times shared"

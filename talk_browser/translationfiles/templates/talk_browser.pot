@@ -61,6 +61,12 @@ msgid ""
 "connection and try again."
 msgstr ""
 
+#. TRANSLATORS src/App.vue:21
+#. TRANSLATORS src/App.vue:29
+#: /apps-dev/talk_browser/specialVueFakeDummyForL10nScript.js:212
+msgid "Settings"
+msgstr ""
+
 #. TRANSLATORS src/App.vue:33
 #: /apps-dev/talk_browser/specialVueFakeDummyForL10nScript.js:213
 #: /apps-dev/talk_browser/specialVueFakeDummyForL10nScript.js:223
@@ -154,6 +160,36 @@ msgstr ""
 msgid "Load more"
 msgstr ""
 
+#. TRANSLATORS src/components/SettingsPanel.vue:6
+#: /apps-dev/talk_browser/specialVueFakeDummyForL10nScript.js:490
+msgid "View"
+msgstr ""
+
+#. TRANSLATORS src/components/SettingsPanel.vue:10
+#: /apps-dev/talk_browser/specialVueFakeDummyForL10nScript.js:492
+msgid "Show group conversations"
+msgstr ""
+
+#. TRANSLATORS src/components/SettingsPanel.vue:17
+#: /apps-dev/talk_browser/specialVueFakeDummyForL10nScript.js:494
+msgid "About"
+msgstr ""
+
+#. TRANSLATORS src/components/SettingsPanel.vue:20
+#: /apps-dev/talk_browser/specialVueFakeDummyForL10nScript.js:496
+msgid "Version"
+msgstr ""
+
+#. TRANSLATORS src/components/SettingsPanel.vue:22
+#: /apps-dev/talk_browser/specialVueFakeDummyForL10nScript.js:498
+msgid "Licence"
+msgstr ""
+
+#. TRANSLATORS src/components/SettingsPanel.vue:29
+#: /apps-dev/talk_browser/specialVueFakeDummyForL10nScript.js:500
+msgid "View on GitHub"
+msgstr ""
+
 #: /apps-dev/talk_browser/specialVueFakeDummyForL10nScript.js:372
 msgid "Search {type}"
 msgstr ""
@@ -162,6 +198,11 @@ msgstr ""
 #: /apps-dev/talk_browser/specialVueFakeDummyForL10nScript.js:373
 #: /apps-dev/talk_browser/specialVueFakeDummyForL10nScript.js:462
 msgid "Search…"
+msgstr ""
+
+#. TRANSLATORS src/components/ContentTabs.vue:42
+#: /apps-dev/talk_browser/specialVueFakeDummyForL10nScript.js:397
+msgid "Sort"
 msgstr ""
 
 #. TRANSLATORS src/components/ContentTabs.vue:4
@@ -239,6 +280,16 @@ msgstr ""
 msgid "Open on map"
 msgstr ""
 
+#. TRANSLATORS src/components/ErrorBoundary.vue:6
+#: /apps-dev/talk_browser/specialVueFakeDummyForL10nScript.js:230
+msgid "Something went wrong"
+msgstr ""
+
+#. TRANSLATORS src/components/ErrorBoundary.vue:7
+#: /apps-dev/talk_browser/specialVueFakeDummyForL10nScript.js:232
+msgid "An unexpected error occurred. You can try to recover by clicking Retry."
+msgstr ""
+
 #. TRANSLATORS src/components/GenericList.vue:57
 #. TRANSLATORS src/components/LinkList.vue:68
 #: /apps-dev/talk_browser/specialVueFakeDummyForL10nScript.js:723
@@ -252,6 +303,16 @@ msgstr ""
 
 #: /apps-dev/talk_browser/specialVueFakeDummyForL10nScript.js:799
 msgid "Type a URL into this conversation to see it here"
+msgstr ""
+
+#. TRANSLATORS src/components/LinkList.vue:63
+#: /apps-dev/talk_browser/specialVueFakeDummyForL10nScript.js:873
+msgid "Go to message"
+msgstr ""
+
+#. TRANSLATORS src/components/LinkList.vue:73
+#: /apps-dev/talk_browser/specialVueFakeDummyForL10nScript.js:875
+msgid "Open link in new tab"
 msgstr ""
 
 #. TRANSLATORS src/components/LinkList.vue:42
