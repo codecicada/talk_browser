@@ -277,8 +277,13 @@ class OgImageController extends Controller {
             }
         }
 
-        // Only proxy actual images
+        // Only proxy raster images — reject non-image and scriptable SVG types
         if (!str_starts_with($mime, 'image/')) {
+            return [null, null];
+        }
+        // SVG is inherently scriptable (supports <script>, event handlers, etc.)
+        // and must not be served through the proxy regardless of CSP headers.
+        if (str_starts_with($mime, 'image/svg')) {
             return [null, null];
         }
 
@@ -367,8 +372,11 @@ class OgImageController extends Controller {
             return $this->emptyResponse();
         }
         $response = new DataDisplayResponse($data, Http::STATUS_OK, [
-            'Content-Type'  => $mime,
-            'Cache-Control' => 'public, max-age=' . self::CACHE_TTL,
+            'Content-Type'              => $mime,
+            'Cache-Control'             => 'public, max-age=' . self::CACHE_TTL,
+            'Content-Security-Policy'   => "default-src 'none'",
+            'X-Content-Type-Options'    => 'nosniff',
+            'Content-Disposition'       => 'inline; filename="og-image"',
         ]);
         return $response;
     }
