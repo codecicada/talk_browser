@@ -11,6 +11,10 @@
 import { ref } from 'vue'
 import { fetchSharedItems, fetchMessages, extractUrls } from '../api/talk.js'
 
+// Maximum number of message pages to scan per load/scanMore call.
+// Each page is 200 messages, so 3 pages covers ~600 messages.
+const MAX_LINK_SCAN_PAGES = 3
+
 export function useSharedItems(tokenRef, objectType) {
 	const items = ref([])
 	const loading = ref(false)
@@ -25,11 +29,8 @@ export function useSharedItems(tokenRef, objectType) {
 	// For link extraction
 	const linkMap = ref(new Map())
 
-	// Monotonically incrementing counter used to cancel in-progress loadLinks()
-	// loops when reset() or a new load() is called. Each loop captures the value
-	// at its start and bails out as soon as the counter moves ahead.
-	// Plain let (non-reactive) — only internal loop logic reads it.
-	let scanGeneration = 0
+	// AbortController for cancelling in-flight fetchMessages requests.
+	let abortController = null
 
 	async function load() {
 		const token = tokenRef.value
@@ -37,6 +38,12 @@ export function useSharedItems(tokenRef, objectType) {
 
 		// Already loaded or currently loading — don't reload
 		if (loading.value || loaded.value) return
+
+		// Abort any previous in-flight scan
+		if (abortController) {
+			abortController.abort()
+			abortController = null
+		}
 
 		loading.value = true
 		error.value = null
@@ -55,6 +62,7 @@ export function useSharedItems(tokenRef, objectType) {
 				hasMore.value = cursor.value !== null
 			}
 		} catch (err) {
+			if (err?.name === 'AbortError' || err?.code === 'ERR_CANCELED') return
 			if (process.env.NODE_ENV !== 'production') {
 				// eslint-disable-next-line no-console
 				console.warn('[talk_browser] loadItems error:', err)
@@ -85,9 +93,35 @@ export function useSharedItems(tokenRef, objectType) {
 		}
 	}
 
+	/** Resume scanning from the stored cursor, bounded by MAX_LINK_SCAN_PAGES. */
+	async function scanMore() {
+		const token = tokenRef.value
+		if (!token || !hasMore.value || loadingMore.value) return
+
+		// Abort any previous in-flight scan
+		if (abortController) {
+			abortController.abort()
+			abortController = null
+		}
+
+		loadingMore.value = true
+		hasMore.value = false
+		try {
+			await loadLinks(token, /* isMore= */ true)
+		} catch (err) {
+			if (err?.name === 'AbortError' || err?.code === 'ERR_CANCELED') return
+			error.value = err?.message ?? 'Failed to scan more links'
+		} finally {
+			loadingMore.value = false
+		}
+	}
+
 	/** Reset so the next load() call re-fetches from scratch. */
 	function reset() {
-		scanGeneration++ // cancel any in-progress loadLinks() loop
+		if (abortController) {
+			abortController.abort()
+			abortController = null
+		}
 		items.value = []
 		cursor.value = null
 		hasMore.value = false
@@ -100,26 +134,24 @@ export function useSharedItems(tokenRef, objectType) {
 
 	// ── Link extraction ────────────────────────────────────────────────────────
 
-	async function loadLinks(token) {
-		// Increment generation and capture — any older loop will see a mismatch
-		// and exit without writing state.
-		scanGeneration++
-		const gen = scanGeneration
+	/**
+	 * Scan up to MAX_LINK_SCAN_PAGES pages of message history for URLs.
+	 * @param {string} token
+	 * @param {boolean} isMore - if true, resumes from cursor without resetting the link map
+	 */
+	async function loadLinks(token, isMore = false) {
+		abortController = new AbortController()
+		const signal = abortController.signal
 
-		linkMap.value = new Map()
-		cursor.value = null
+		if (!isMore) {
+			linkMap.value = new Map()
+			cursor.value = null
+		}
 
-		// Scan all pages of chat history automatically, updating items reactively
-		// after each page so links appear progressively while loading.
-		let done = false
-		while (!done) {
-			// Guard: bail if a newer load/reset has superseded this loop
-			if (gen !== scanGeneration) return
+		let pagesScanned = 0
 
-			const result = await fetchMessages(token, cursor.value)
-
-			// Guard: discard results if cancelled while the fetch was in-flight
-			if (gen !== scanGeneration) return
+		while (pagesScanned < MAX_LINK_SCAN_PAGES) {
+			const result = await fetchMessages(token, cursor.value, 200, signal)
 
 			for (const m of result.messages) {
 				if (m.messageType !== 'comment' || m.systemMessage) continue
@@ -128,19 +160,19 @@ export function useSharedItems(tokenRef, objectType) {
 						const existing = linkMap.value.get(url)
 						linkMap.value.set(url, { ...existing, count: existing.count + 1 })
 					} else {
-					linkMap.value.set(url, {
-						id: `link-${url}`,
-						messageId: m.id,
-						conversationToken: token,
-						timestamp: m.timestamp,
-						actorDisplayName: m.actorDisplayName,
-						url,
-						title: (() => {
-							const stripped = m.message.trim().replace(url, '').trim()
-							return stripped.length > 0 ? stripped.slice(0, 150) : url
-						})(),
-						count: 1,
-					})
+						linkMap.value.set(url, {
+							id: `link-${url}`,
+							messageId: m.id,
+							conversationToken: token,
+							timestamp: m.timestamp,
+							actorDisplayName: m.actorDisplayName,
+							url,
+							title: (() => {
+								const stripped = m.message.trim().replace(url, '').trim()
+								return stripped.length > 0 ? stripped.slice(0, 150) : url
+							})(),
+							count: 1,
+						})
 					}
 				}
 			}
@@ -148,10 +180,17 @@ export function useSharedItems(tokenRef, objectType) {
 			// Update items reactively after each page so links appear as they're found
 			items.value = Array.from(linkMap.value.values())
 			cursor.value = result.lastKnownMessageId
-			done = result.done
+			pagesScanned++
+
+			if (result.done) {
+				// Reached beginning of history — no more pages available
+				hasMore.value = false
+				return
+			}
 		}
 
-		hasMore.value = false
+		// Stopped due to page limit, not end of history — more pages available
+		hasMore.value = cursor.value !== null
 	}
 
 	return {
@@ -162,6 +201,7 @@ export function useSharedItems(tokenRef, objectType) {
 		hasMore,
 		load,
 		loadMore,
+		scanMore,
 		reset,
 	}
 }

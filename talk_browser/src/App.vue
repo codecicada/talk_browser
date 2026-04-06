@@ -166,9 +166,12 @@
 							v-else-if="tab === 'links'"
 							:items="items"
 							:loading="itemsLoading"
+							:loading-more="itemsLoadingMore"
+							:has-more="itemsHasMore"
 							:search="searchQuery"
 							:sort="sort"
 							:highlight-id="highlightId"
+							@scan-more="scanMoreItems"
 						/>
 
 						<!-- Locations / deckcard / other / recording -->
@@ -373,6 +376,10 @@ export default {
 			activeStore.value?.loadMore()
 		}
 
+		function scanMoreItems() {
+			activeStore.value?.scanMore()
+		}
+
 		// When the conversation changes, reset all tab stores and reload overview.
 		// Do NOT force activeTab back to 'overview' here — onMounted handles the
 		// initial tab, and the user's manual tab switches should be respected.
@@ -492,6 +499,7 @@ export default {
 			itemsHasMore,
 			loadItems,
 			loadMoreItems,
+			scanMoreItems,
 		}
 	},
 

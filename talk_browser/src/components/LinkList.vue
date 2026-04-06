@@ -84,11 +84,24 @@
 				{{ t('talk_browser', 'Scanning message history for links…') }}
 			</span>
 		</div>
+
+		<div v-else-if="loadingMore" class="link-list__loading" role="status" aria-live="polite">
+			<NcLoadingIcon :size="32" aria-hidden="true" />
+			<span class="link-list__scan-note">
+				{{ t('talk_browser', 'Scanning more history…') }}
+			</span>
+		</div>
+
+		<div v-else-if="hasMore" class="link-list__scan-more">
+			<NcButton @click="$emit('scan-more')">
+				{{ t('talk_browser', 'Scan more history') }}
+			</NcButton>
+		</div>
 	</div>
 </template>
 
 <script>
-import { NcEmptyContent, NcLoadingIcon } from '@nextcloud/vue'
+import { NcButton, NcEmptyContent, NcLoadingIcon } from '@nextcloud/vue'
 import { translate as t } from '@nextcloud/l10n'
 import { generateUrl } from '@nextcloud/router'
 import { safeUrl } from '../utils/url.js'
@@ -101,7 +114,7 @@ const OG_META_CONCURRENCY = 4
 export default {
 	name: 'LinkList',
 
-	components: { NcEmptyContent, NcLoadingIcon },
+	components: { NcButton, NcEmptyContent, NcLoadingIcon },
 
 	mixins: [useListBehavior],
 
@@ -405,6 +418,12 @@ export default {
 	width: 16px;
 	height: 16px;
 	opacity: 0.4;
+}
+
+.link-list__scan-more {
+	display: flex;
+	justify-content: center;
+	padding: 16px 0;
 }
 
 .link-list__loading {

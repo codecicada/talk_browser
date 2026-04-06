@@ -113,7 +113,7 @@ export async function fetchSharedItems(token, objectType, lastKnownMessageId = n
  * @param {number} limit
  * @returns {Promise<{messages: Array, lastKnownMessageId: number|null, done: boolean}>}
  */
-export async function fetchMessages(token, lastKnownMessageId = null, limit = 200) {
+export async function fetchMessages(token, lastKnownMessageId = null, limit = 200, signal = null) {
 	const params = {
 		lookIntoFuture: 0,
 		limit,
@@ -128,7 +128,7 @@ export async function fetchMessages(token, lastKnownMessageId = null, limit = 20
 	try {
 		response = await axios.get(
 			ocsUrl(`/v1/chat/${token}`),
-			{ headers: OCS_HEADERS, params },
+			{ headers: OCS_HEADERS, params, signal },
 		)
 	} catch (error) {
 		// 304 Not Modified = no more history
