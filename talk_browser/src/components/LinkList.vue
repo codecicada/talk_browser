@@ -93,7 +93,10 @@ import { translate as t } from '@nextcloud/l10n'
 import { generateUrl } from '@nextcloud/router'
 import { safeUrl } from '../utils/url.js'
 import { fetchOgMeta, fetchOgImage } from '../api/talk.js'
+import { ConcurrencyLimiter } from '../utils/concurrency.js'
 import useListBehavior from '../composables/useListBehavior.js'
+
+const OG_META_CONCURRENCY = 4
 
 export default {
 	name: 'LinkList',
@@ -110,8 +113,12 @@ export default {
 			ogBlobUrls: {},
 			// Map of item.url → { title: string|null, description: string|null }
 			ogMeta: {},
-			// Set of URLs currently being fetched (avoid duplicate in-flight requests)
-			ogMetaFetching: new Set(),
+			// IntersectionObserver instance for lazy OG meta fetching
+			_observer: null,
+			// ConcurrencyLimiter instance for OG meta requests
+			_limiter: null,
+			// Guard: set to true in beforeDestroy to prevent post-destroy $set calls
+			_destroyed: false,
 		}
 	},
 
@@ -133,7 +140,7 @@ export default {
 
 	watch: {
 		filtered(newItems, oldItems) {
-			// Revoke blob URLs for items that left the filtered list (task 4.2)
+			// Revoke blob URLs for items that left the filtered list
 			const newIds = new Set(newItems.map(i => i.id))
 			for (const item of (oldItems || [])) {
 				if (!newIds.has(item.id) && this.ogBlobUrls[item.id]) {
@@ -141,18 +148,36 @@ export default {
 					this.$delete(this.ogBlobUrls, item.id)
 				}
 			}
-			this.prefetchOgMeta(newItems)
+			// Re-observe newly rendered <li> elements after Vue updates the DOM
+			this.$nextTick(() => this._reobserve())
+			// OG images are still eagerly fetched per visible item
 			this.prefetchOgImages(newItems)
 		},
 	},
 
 	mounted() {
-		this.prefetchOgMeta(this.filtered)
-		this.prefetchOgImages(this.filtered)
+		this._limiter = new ConcurrencyLimiter(OG_META_CONCURRENCY)
+		this._observer = new IntersectionObserver(
+			(entries) => this._onIntersect(entries),
+			{ rootMargin: '200px 0px' },
+		)
+		this.$nextTick(() => {
+			this._reobserve()
+			this.prefetchOgImages(this.filtered)
+		})
 	},
 
 	beforeDestroy() {
-		// Revoke all blob URLs to prevent memory leaks (task 4.1)
+		this._destroyed = true
+		if (this._observer) {
+			this._observer.disconnect()
+			this._observer = null
+		}
+		if (this._limiter) {
+			this._limiter.clear()
+			this._limiter = null
+		}
+		// Revoke all blob URLs to prevent memory leaks
 		for (const blobUrl of Object.values(this.ogBlobUrls)) {
 			URL.revokeObjectURL(blobUrl)
 		}
@@ -163,12 +188,37 @@ export default {
 		safeUrl,
 		generateUrl,
 
-		onOgError(id) {
-			this.$set(this.ogFailed, id, true)
+		/** Disconnect and re-observe all current <li> elements. */
+		_reobserve() {
+			if (!this._observer) return
+			this._observer.disconnect()
+			const items = this.$el.querySelectorAll('.link-list__item')
+			items.forEach(el => this._observer.observe(el))
+		},
+
+		/** IntersectionObserver callback — enqueue OG meta fetch for visible items. */
+		_onIntersect(entries) {
+			for (const entry of entries) {
+				if (!entry.isIntersecting) continue
+				this._observer.unobserve(entry.target)
+				const id = entry.target.dataset.id
+				const item = this.filtered.find(i => String(i.id) === String(id))
+				if (!item) continue
+				if (this.ogMeta[item.url] !== undefined) continue
+				this._limiter.enqueue(() => fetchOgMeta(item.url))
+					.then(meta => {
+						if (this._destroyed) return
+						this.$set(this.ogMeta, item.url, meta)
+					})
+					.catch(() => {
+						if (this._destroyed) return
+						this.$set(this.ogMeta, item.url, { title: null, description: null })
+					})
+			}
 		},
 
 		/**
-		 * Fetch OG images via XHR blob for all visible items that haven't been
+		 * Fetch OG images via XHR blob for visible items that haven't been
 		 * fetched yet. Deduplicates by item.id.
 		 */
 		prefetchOgImages(items) {
@@ -177,32 +227,12 @@ export default {
 				if (this.ogFailed[item.id]) continue
 				fetchOgImage(item.url)
 					.then(blobUrl => {
+						if (this._destroyed) return
 						this.$set(this.ogBlobUrls, item.id, blobUrl)
 					})
 					.catch(() => {
+						if (this._destroyed) return
 						this.$set(this.ogFailed, item.id, true)
-					})
-			}
-		},
-
-		/**
-		 * Kick off OG meta fetches for all visible items that haven't been
-		 * fetched yet. Requests are deduplicated by URL.
-		 */
-		prefetchOgMeta(items) {
-			for (const item of items) {
-				if (this.ogMeta[item.url] !== undefined) continue
-				if (this.ogMetaFetching.has(item.url)) continue
-				this.ogMetaFetching.add(item.url)
-				fetchOgMeta(item.url)
-					.then(meta => {
-						this.$set(this.ogMeta, item.url, meta)
-					})
-					.catch(() => {
-						this.$set(this.ogMeta, item.url, { title: null, description: null })
-					})
-					.finally(() => {
-						this.ogMetaFetching.delete(item.url)
 					})
 			}
 		},
