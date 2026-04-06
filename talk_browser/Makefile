@@ -4,12 +4,30 @@ APP_DIR    = /apps-dev/$(APP_ID)
 PHAR       = translationtool.phar
 TRANS_DIR  = translationfiles
 
-.PHONY: help l10n-extract l10n-compile
+.PHONY: help build release l10n-extract l10n-compile
 
 help:
 	@echo "Available targets:"
+	@echo "  build          Build JS/CSS assets (runs npm run build)"
+	@echo "  release        Build and package the app into a versioned zip archive for distribution"
 	@echo "  l10n-extract   Extract translatable strings into translationfiles/templates/$(APP_ID).pot"
 	@echo "  l10n-compile   Compile .po files in translationfiles/<lang>/ into l10n/<lang>.json and l10n/<lang>.js"
+
+build:
+	npm run build
+
+release: build
+	$(eval VERSION := $(shell node -p "require('./package.json').version"))
+	@echo "Building release archive for $(APP_ID) v$(VERSION) ..."
+	cd .. && zip -r $(APP_ID)-$(VERSION).zip \
+		$(APP_ID)/appinfo \
+		$(APP_ID)/lib \
+		$(APP_ID)/templates \
+		$(APP_ID)/js \
+		$(APP_ID)/css \
+		$(APP_ID)/img \
+		$(APP_ID)/l10n
+	@echo "Release archive written to ../$(APP_ID)-$(VERSION).zip"
 
 l10n-extract: $(PHAR)
 	@echo "Copying $(PHAR) to container $(CONTAINER):$(APP_DIR)/$(PHAR) ..."
