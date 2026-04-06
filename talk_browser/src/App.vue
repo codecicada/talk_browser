@@ -202,7 +202,7 @@ import {
 	NcLoadingIcon,
 } from '@nextcloud/vue'
 import { translate as t } from '@nextcloud/l10n'
-import { ref, computed, watch, onMounted } from 'vue'
+import { ref, computed, watch, onMounted, onUnmounted } from 'vue'
 import { generateUrl } from '@nextcloud/router'
 
 import ConversationPicker from './components/ConversationPicker.vue'
@@ -258,14 +258,22 @@ export default {
 			}
 		}
 
-		function updatePath(token, tab) {
+		function updatePath(token, tab, push = true) {
 			const path = token
 				? `${BASE}/${encodeURIComponent(token)}/${tab ?? 'overview'}`
 				: `${BASE}/`
 			if (window.location.pathname !== path) {
-				window.history.replaceState(null, '', path)
+				if (push) {
+					window.history.pushState({ token, tab }, '', path)
+				} else {
+					window.history.replaceState({ token, tab }, '', path)
+				}
 			}
 		}
+
+		// Guard flag: true while the popstate handler is updating reactive state,
+		// so the watcher knows to use replaceState instead of pushState.
+		let isRestoringFromPopstate = false
 
 		// ── Conversations ────────────────────────────────────────────────────
 		const {
@@ -416,7 +424,7 @@ export default {
 
 		// ── Sync state → URL path ────────────────────────────────────────────
 		watch([selectedToken, activeTab], ([token, tab]) => {
-			updatePath(token, tab)
+			updatePath(token, tab, !isRestoringFromPopstate)
 		})
 
 		// ── On mount: restore state from URL path ────────────────────────────
@@ -429,7 +437,30 @@ export default {
 				activeTab.value = hashTab
 			}
 
+			// Stamp the initial history entry with state so popstate can read it,
+			// using replaceState so we don't push an extra entry on first load.
+			updatePath(hashToken, activeTab.value, false)
+
 			await loadConversations(hashToken)
+
+			window.addEventListener('popstate', handlePopstate)
+		})
+
+		// ── Handle browser Back/Forward ───────────────────────────────────────
+		function handlePopstate(event) {
+			const state = event.state ?? parsePath()
+			const token = state.token ?? null
+			const tab = VALID_TABS.includes(state.tab) ? state.tab : 'overview'
+
+			// Set flag so the watcher uses replaceState, not pushState
+			isRestoringFromPopstate = true
+			selectedToken.value = token
+			activeTab.value = tab
+			isRestoringFromPopstate = false
+		}
+
+		onUnmounted(() => {
+			window.removeEventListener('popstate', handlePopstate)
 		})
 
 		return {

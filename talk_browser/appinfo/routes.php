@@ -6,7 +6,8 @@ declare(strict_types=1);
 // The requirement below ensures {token} and {tab} never match reserved words
 // like "api" used by our own internal endpoints.
 $tokenPattern = '[a-z0-9]+';
-$tabPattern   = 'overview|media|files|audio|links|locations|other';
+// IMPORTANT: Keep in sync with TABS[].id in src/constants.js
+$tabPattern   = 'overview|media|file|audio|voice|links|location|other';
 
 return [
     'routes' => [

@@ -25,6 +25,12 @@ export function useSharedItems(tokenRef, objectType) {
 	// For link extraction
 	const linkMap = ref(new Map())
 
+	// Monotonically incrementing counter used to cancel in-progress loadLinks()
+	// loops when reset() or a new load() is called. Each loop captures the value
+	// at its start and bails out as soon as the counter moves ahead.
+	// Plain let (non-reactive) — only internal loop logic reads it.
+	let scanGeneration = 0
+
 	async function load() {
 		const token = tokenRef.value
 		if (!token || !objectType || objectType === 'overview') return
@@ -81,6 +87,7 @@ export function useSharedItems(tokenRef, objectType) {
 
 	/** Reset so the next load() call re-fetches from scratch. */
 	function reset() {
+		scanGeneration++ // cancel any in-progress loadLinks() loop
 		items.value = []
 		cursor.value = null
 		hasMore.value = false
@@ -94,6 +101,11 @@ export function useSharedItems(tokenRef, objectType) {
 	// ── Link extraction ────────────────────────────────────────────────────────
 
 	async function loadLinks(token) {
+		// Increment generation and capture — any older loop will see a mismatch
+		// and exit without writing state.
+		scanGeneration++
+		const gen = scanGeneration
+
 		linkMap.value = new Map()
 		cursor.value = null
 
@@ -101,7 +113,13 @@ export function useSharedItems(tokenRef, objectType) {
 		// after each page so links appear progressively while loading.
 		let done = false
 		while (!done) {
+			// Guard: bail if a newer load/reset has superseded this loop
+			if (gen !== scanGeneration) return
+
 			const result = await fetchMessages(token, cursor.value)
+
+			// Guard: discard results if cancelled while the fetch was in-flight
+			if (gen !== scanGeneration) return
 
 			for (const m of result.messages) {
 				if (m.messageType !== 'comment' || m.systemMessage) continue

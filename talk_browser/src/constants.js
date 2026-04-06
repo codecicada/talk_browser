@@ -32,6 +32,7 @@ export const SORT_OPTIONS = {
 	],
 }
 
+// IMPORTANT: Keep tab IDs in sync with $tabPattern in appinfo/routes.php
 export const TABS = [
 	{
 		id: 'overview',
