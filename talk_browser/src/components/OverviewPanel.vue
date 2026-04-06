@@ -75,7 +75,13 @@
 							:aria-label="t('talk_browser', 'Open {name}', { name: itemName(item) })"
 							@click="$emit('go-to-item', { tab: section.id, id: item.id })"
 						>
-							<span :class="['overview__item-icon', section.icon]" aria-hidden="true" />
+							<img
+								v-if="section.id === 'file'"
+								:src="mimeIconUrl(item)"
+								class="overview__item-icon"
+								aria-hidden="true"
+							/>
+							<span v-else :class="['overview__item-icon', section.icon]" aria-hidden="true" />
 							<span class="overview__item-name">{{ itemName(item) }}</span>
 							<span class="overview__item-date">{{ formatDate(item.timestamp) }}</span>
 						</button>
@@ -142,6 +148,11 @@ export default {
 			const fileId = safeFileId(item.messageParameters?.file?.id)
 			if (!fileId) return ''
 			return `${getRootUrl()}/index.php/core/preview?fileId=${fileId}&x=120&y=120&a=true`
+		},
+
+		mimeIconUrl(item) {
+			const mime = item.messageParameters?.file?.mimetype ?? 'application/octet-stream'
+			return window.OC?.MimeType?.getIconUrl(mime) ?? '/core/img/filetypes/file.svg'
 		},
 
 		formatDate(timestamp) {
