@@ -188,3 +188,20 @@ export async function fetchOgMeta(url) {
 	const response = await axios.get(endpoint)
 	return response.data
 }
+
+/**
+ * Fetch an OG image via XHR (so the CSRF token is sent) and return a blob URL.
+ * The caller is responsible for calling URL.revokeObjectURL() when done.
+ *
+ * @param {string} url - the original page URL whose OG image should be fetched
+ * @returns {Promise<string>} blob URL string
+ */
+export async function fetchOgImage(url) {
+	const endpoint = generateUrl('/apps/talk_browser/api/og-image') + '?url=' + encodeURIComponent(url)
+	const response = await axios.get(endpoint, { responseType: 'blob' })
+	// 204 No Content means the server found no OG image — treat as failure
+	if (response.status === 204 || response.data.size === 0) {
+		throw new Error('No OG image')
+	}
+	return URL.createObjectURL(response.data)
+}

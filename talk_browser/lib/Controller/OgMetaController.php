@@ -9,7 +9,6 @@ use OCA\TalkContentBrowser\Service\UrlValidator;
 use OCP\AppFramework\Controller;
 use OCP\AppFramework\Http;
 use OCP\AppFramework\Http\Attribute\NoAdminRequired;
-use OCP\AppFramework\Http\Attribute\NoCSRFRequired;
 use OCP\AppFramework\Http\JSONResponse;
 use OCP\AppFramework\Http\Response;
 use OCP\Files\IAppData;
@@ -52,7 +51,6 @@ class OgMetaController extends Controller {
         $this->urlValidator = $urlValidator;
     }
 
-    #[NoCSRFRequired]
     #[NoAdminRequired]
     public function proxy(): JSONResponse {
         $rawUrl = $this->request->getParam('url', '');

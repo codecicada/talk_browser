@@ -19,14 +19,13 @@
 		>
 			<!-- Outer div is non-interactive; only the title anchor and open-icon anchor navigate -->
 			<div class="link-list__link">
-				<!-- OG image thumbnail (proxied); falls back to link SVG icon — non-interactive -->
+				<!-- OG image thumbnail (fetched via XHR blob); falls back to link SVG icon — non-interactive -->
 				<img
-					v-if="!ogFailed[item.id]"
-					:src="ogProxyUrl(item.url)"
+					v-if="ogBlobUrls[item.id]"
+					:src="ogBlobUrls[item.id]"
 					alt=""
 					class="link-list__og-thumb"
 					loading="lazy"
-					@error="onOgError(item.id)"
 				/>
 				<svg v-else class="link-list__link-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
 					<path fill="currentColor" d="M10.59 13.41c.41.39.41 1.03 0 1.42c-.39.41-1.03.41-1.42 0a5.003 5.003 0 0 1 0-7.07l3.54-3.54a5.003 5.003 0 0 1 7.07 0a5.003 5.003 0 0 1 0 7.07l-1.49 1.49c.01-.82-.12-1.64-.4-2.42l.47-.48a2.982 2.982 0 0 0 0-4.24a2.982 2.982 0 0 0-4.24 0l-3.53 3.53a2.982 2.982 0 0 0 0 4.24m2.82-4.24c.39-.41 1.03-.41 1.42 0a5.003 5.003 0 0 1 0 7.07l-3.54 3.54a5.003 5.003 0 0 1-7.07 0a5.003 5.003 0 0 1 0-7.07l1.49-1.49c-.01.82.12 1.64.4 2.43l-.47.47a2.982 2.982 0 0 0 0 4.24a2.982 2.982 0 0 0 4.24 0l3.53-3.53a2.982 2.982 0 0 0 0-4.24a.973.973 0 0 1 0-1.42Z"/>
@@ -93,7 +92,7 @@ import { NcEmptyContent, NcLoadingIcon } from '@nextcloud/vue'
 import { translate as t } from '@nextcloud/l10n'
 import { generateUrl } from '@nextcloud/router'
 import { safeUrl } from '../utils/url.js'
-import { fetchOgMeta } from '../api/talk.js'
+import { fetchOgMeta, fetchOgImage } from '../api/talk.js'
 import useListBehavior from '../composables/useListBehavior.js'
 
 export default {
@@ -107,6 +106,8 @@ export default {
 		return {
 			// Map of item.id → true when the OG image failed/is absent
 			ogFailed: {},
+			// Map of item.id → blob URL string for XHR-fetched OG images
+			ogBlobUrls: {},
 			// Map of item.url → { title: string|null, description: string|null }
 			ogMeta: {},
 			// Set of URLs currently being fetched (avoid duplicate in-flight requests)
@@ -131,13 +132,30 @@ export default {
 	},
 
 	watch: {
-		filtered(newItems) {
+		filtered(newItems, oldItems) {
+			// Revoke blob URLs for items that left the filtered list (task 4.2)
+			const newIds = new Set(newItems.map(i => i.id))
+			for (const item of (oldItems || [])) {
+				if (!newIds.has(item.id) && this.ogBlobUrls[item.id]) {
+					URL.revokeObjectURL(this.ogBlobUrls[item.id])
+					this.$delete(this.ogBlobUrls, item.id)
+				}
+			}
 			this.prefetchOgMeta(newItems)
+			this.prefetchOgImages(newItems)
 		},
 	},
 
 	mounted() {
 		this.prefetchOgMeta(this.filtered)
+		this.prefetchOgImages(this.filtered)
+	},
+
+	beforeDestroy() {
+		// Revoke all blob URLs to prevent memory leaks (task 4.1)
+		for (const blobUrl of Object.values(this.ogBlobUrls)) {
+			URL.revokeObjectURL(blobUrl)
+		}
 	},
 
 	methods: {
@@ -145,12 +163,26 @@ export default {
 		safeUrl,
 		generateUrl,
 
-		ogProxyUrl(url) {
-			return generateUrl('/apps/talk_browser/api/og-image') + '?url=' + encodeURIComponent(url)
-		},
-
 		onOgError(id) {
 			this.$set(this.ogFailed, id, true)
+		},
+
+		/**
+		 * Fetch OG images via XHR blob for all visible items that haven't been
+		 * fetched yet. Deduplicates by item.id.
+		 */
+		prefetchOgImages(items) {
+			for (const item of items) {
+				if (this.ogBlobUrls[item.id] !== undefined) continue
+				if (this.ogFailed[item.id]) continue
+				fetchOgImage(item.url)
+					.then(blobUrl => {
+						this.$set(this.ogBlobUrls, item.id, blobUrl)
+					})
+					.catch(() => {
+						this.$set(this.ogFailed, item.id, true)
+					})
+			}
 		},
 
 		/**
